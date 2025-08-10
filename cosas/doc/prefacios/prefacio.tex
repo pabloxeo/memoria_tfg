@@ -1,0 +1,169 @@
+\chapter*{}
+%\thispagestyle{empty}
+%\cleardoublepage
+
+%\thispagestyle{empty}
+
+\cleardoublepage
+\thispagestyle{empty}
+
+\begin{center}
+{\large\bfseries Desarrollo software de una aplicación de modelado 3D
+basada en Signed Distance Functions (SDF)}\\
+\end{center}
+\begin{center}
+Pablo Cantudo Gómez\\
+\end{center}
+
+%\vspace{0.7cm}
+\noindent{\textbf{Palabras clave}: WebGPU, C++, ray marching, motor de renderizado, funciones de distancia con signo (SDF)}\\
+
+\vspace{0.7cm}
+\noindent{\textbf{Resumen}}\\
+
+Este trabajo presenta el desarrollo de Copper, un motor de renderizado 3D en
+tiempo real implementado en C++ utilizando la API WebGPU a través de
+Dawn. El motor emplea técnicas de ray marching sobre funciones de distancia
+con signo (SDF), lo que permite una representación eficiente y flexible de
+geometría tridimensional. Una de las principales ventajas de utilizar SDF es
+la capacidad de expresar de forma directa y compacta operaciones booleanas
+entre primitivas geométricas —como uniones, intersecciones o diferencias—
+mediante simples expresiones algebraicas. Además, a diferencia de los métodos
+tradicionales basados en mallas o polígonos, las SDF permiten aplicar
+operaciones booleanas suaves, como la unión con suavizado (smooth union),
+de forma prácticamente trivial desde el punto de vista computacional.
+\bigbreak
+Este enfoque simplifica notablemente la construcción de formas com-
+plejas, evitando problemas típicos de la computación geométrica como el
+manejo de vértices, normales o topologías complejas. También se facilita
+la animación y transformación de objetos mediante funciones continuas. El
+motor incluye un sistema de sombreado en WGSL, con soporte para sombras
+suaves, operaciones modulares sobre la escena, seleccion de objetos, carga
+y guardado de modelos. Los resultados demuestran que el uso de SDF no
+solo ofrece un modelo más elegante para definir geometría, sino que permite
+construir escenas visualmente complejas con menos código y una mayor expresividad gráfica.
+En conjunto, el sistema demuestra la viabilidad técnica
+y creativa del uso de SDF en entornos modernos.
+\bigbreak
+Los contenidos incluidos en la memoria son:
+\begin{enumerate}
+    \item   
+    \item  
+    \item 
+\end{enumerate}
+\cleardoublepage
+
+
+\thispagestyle{empty}
+
+
+\begin{center}
+{\large\bfseries Development of a 3D modeling application based on Signed
+Distance Functions/Fields (SDF)}\\
+\end{center}
+\begin{center}
+Pablo Cantudo Gomez \\
+\end{center}
+
+%\vspace{0.7cm}
+\noindent{\textbf{Keywords}: WebGPU, C++, ray marching, rendering engine, Signed Distance Functions/Fields (SDF)}\\
+
+\vspace{0.7cm}
+\noindent{\textbf{Abstract}}\\
+
+This work presents the development of Copper, a real-time 3D rendering en-
+gine implemented in C++ using the WebGPU API through Dawn. The engi-
+ne employs ray marching techniques over Signed Distance Functions/Fields
+(SDF), enabling an efficient and flexible representation of three-dimensional
+geometry. One of the main advantages of using SDF is the ability to directly
+and compactly express Boolean operations between geometric primitives —
+such as unions, intersections, or differences— through simple algebraic ex-
+pressions. Furthermore, unlike traditional mesh- or polygon-based methods,
+SDF allows for smooth Boolean operations, such as smooth union, in a vir-
+tually trivial manner from a computational standpoint.
+\bigbreak
+This approach greatly simplifies the construction of complex shapes,
+avoiding typical problems in geometric computing such as handling ver-
+tices, normals, or complex topologies. It also facilitates the animation and
+transformation of objects through continuous functions. The engine includes
+a shading system in WGSL, with support for soft shadows, modular scene
+operations, object selection, and model loading and saving. The results show
+that the use of SDF not only offers a more elegant model for defining geo-
+metry, but also enables the creation of visually complex scenes with less code
+and greater graphical expressiveness. Overall, the system demonstrates the
+technical and creative feasibility of using SDF in modern environments.
+
+The contents included in this document are as follows:
+\begin{enumerate}
+    \item  
+    \item  
+    \item  
+\end{enumerate}
+
+\chapter*{}
+\thispagestyle{empty}
+
+\noindent\rule[-1ex]{\textwidth}{2pt}\\[4.5ex]
+
+Yo, \textbf{Pablo Cantudo Gómez}, alumno de la titulación Grado en ingeniería informática de la \textbf{Escuela Técnica Superior
+de Ingenierías Informática y de Telecomunicación de la Universidad de Granada}, con DNI 78243264, autorizo la
+ubicación de la siguiente copia de mi Trabajo Fin de Grado en la biblioteca del centro para que pueda ser
+consultada por las personas que lo deseen.
+
+\vspace{6cm}
+
+\noindent Fdo: Pablo Cantudo Gómez
+
+\vspace{2cm}
+
+\begin{flushright}
+Granada a x de Septiembre de 2025.
+\end{flushright}
+
+
+\chapter*{}
+\thispagestyle{empty}
+
+\noindent\rule[-1ex]{\textwidth}{2pt}\\[4.5ex]
+
+D. \textbf{Tutores}, Profesores del Área de x del Departamento x de la Universidad de Granada.
+
+\vspace{0.5cm}
+
+\textbf{Informan:}
+
+\vspace{0.5cm}
+
+Que el presente trabajo, titulado \textit{\textbf{Nombre}},
+ha sido realizado bajo su supervisión por \textbf{Tutores}, y autorizamos la defensa de dicho trabajo ante el tribunal
+que corresponda.
+
+\vspace{0.5cm}
+
+Y para que conste, expiden y firman el presente informe en Granada a 11 de Noviembre de 2023.
+
+\vspace{1cm}
+
+\textbf{Los directores:}
+
+\vspace{5cm}
+
+\noindent \textbf{Tutores}
+
+\chapter*{Agradecimientos}
+\thispagestyle{empty}
+
+       \vspace{1cm}
+
+
+Quiero expresar mi agradecimiento a todas las personas que han contri-
+buido directa o indirectamente a la realización de este trabajo.
+En primer lugar, a mi tutor Juan Carlos Torres Cantero y cotutor Luis
+López Escudero por la ayuda durante el desarrollo y la corrección del proyec-
+to, a mis amigos por las discusiones y las ideas, y a mi familia por su apoyo in-
+condicional.
+\bigbreak
+Finalmente, me gustaría mencionar a la comunidad de desarrolladores y
+recursos abiertos, especialmente los foros, artículos y proyectos relacionados
+con WebGPU, SDF y ray marching, cuya documentación y ejemplos han
+sido una fuente de aprendizaje invaluable.
