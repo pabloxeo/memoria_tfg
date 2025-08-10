@@ -1,0 +1,95 @@
+\thispagestyle{empty}
+
+\begin{center}
+{\large\bfseries Desarrollo software de una aplicación de modelado 3d basada en Signed Distance Funtion (sdf) \\ Motor de renderizado en tiempo real usando Dawn, C++ y WebGPU }\\
+\end{center}
+\begin{center}
+Pablo Cantudo Gómez\\
+\end{center}
+
+\vspace{0.7cm}
+
+\vspace{0.5cm}
+\noindent\textbf{Palabras clave}: \textit{SDF}, \textit{WebGPU}, \textit{C++}, \textit{ray marching}, \textit{motor de renderizado}
+\vspace{0.7cm}
+
+\noindent\textbf{Resumen}\\
+\break
+Este trabajo presenta el desarrollo de \textit{Copper}, un motor de renderizado 3D en tiempo real implementado en C++ utilizando la API WebGPU a trav\'es de Dawn.
+El motor emplea t\'ecnicas de \textit{ray marching} sobre funciones de distancia con signo (SDF), lo que permite una representaci\'on eficiente y flexible de geometr\'ia 
+ tridimensional. Una de las principales ventajas de utilizar SDF es la capacidad de expresar de forma directa y compacta operaciones booleanas entre primitivas geom\'etricas
+  ---como uniones, intersecciones o diferencias--- mediante simples expresiones algebraicas. Adem\'as, a diferencia de los m\'etodos tradicionales basados en mallas o 
+  pol\'igonos, las SDF permiten aplicar operaciones booleanas suaves, como la uni\'on con suavizado (\textit{smooth union}), 
+  de forma pr\'acticamente trivial desde el punto de vista computacional.
+\bigbreak
+Este enfoque simplifica notablemente la construcci\'on de formas complejas, evitando problemas t\'ipicos de la computaci\'on geom\'etrica como el manejo 
+de v\'ertices, normales o topolog\'ias complejas. Tambi\'en se facilita la animaci\'on y transformaci\'on de objetos mediante funciones continuas. El motor 
+incluye un sistema de sombreado en WGSL, con soporte para sombras suaves, operaciones modulares sobre la escena, seleccion de objetos, carga y guardado de modelos. Los resultados demuestran que
+el uso de SDF no solo ofrece un modelo m\'as elegante para definir geometr\'ia, sino que permite construir escenas visualmente complejas con menos c\'odigo y una mayor expresividad gr\'afica.
+En conjunto, el sistema demuestra la viabilidad t\'ecnica y creativa del uso de SDF en entornos modernos.
+\cleardoublepage
+
+\begin{center}
+	{\large\bfseries Development of a 3D modeling application based on Signed Distance Functions (SDF) \\ Real-time rendering engine using Dawn, C++ and WebGPU}\\
+\end{center}
+\begin{center}
+	Pablo Cantudo Gómez\\
+\end{center}
+\vspace{0.5cm}
+\noindent\textbf{Keywords}: \textit{SDF}, \textit{WebGPU}, \textit{C++}, \textit{ray marching}, \textit{rendering engine}
+\vspace{0.7cm}
+
+\noindent\textbf{Abstract}\\
+\break
+This work presents the development of Copper, a real-time 3D rendering engine implemented in C++ using the WebGPU API through Dawn.
+The engine employs ray marching techniques over Signed Distance Functions/Fields (SDF), enabling an efficient and flexible representation of three-dimensional geometry.
+One of the main advantages of using SDF is the ability to directly and compactly express Boolean operations between geometric primitives ---such as unions, intersections, or differences--- through simple algebraic expressions.
+Furthermore, unlike traditional mesh- or polygon-based methods, SDF allows for smooth Boolean operations, such as smooth union, in a virtually trivial manner from a computational standpoint.
+\bigbreak
+This approach greatly simplifies the construction of complex shapes, avoiding typical problems in geometric computing such as handling vertices, normals, or complex topologies.
+It also facilitates the animation and transformation of objects through continuous functions.
+The engine includes a shading system in WGSL, with support for soft shadows, modular scene operations, object selection, and model loading and saving.
+The results show that the use of SDF not only offers a more elegant model for defining geometry, but also enables the creation of visually complex scenes with less code and greater graphical expressiveness.
+Overall, the system demonstrates the technical and creative feasibility of using SDF in modern environments.
+
+\cleardoublepage
+
+\thispagestyle{empty}
+
+\noindent\rule[-1ex]{\textwidth}{2pt}\\[4.5ex]
+
+D. \textbf{Tutora/e(s)}, Profesor(a) del ...
+
+\vspace{0.5cm}
+
+\textbf{Informo:}
+
+\vspace{0.5cm}
+
+Que el presente trabajo, titulado \textit{\textbf{Chief}},
+ha sido realizado bajo mi supervisión por \textbf{Estudiante}, y autorizo la defensa de dicho trabajo ante el tribunal
+que corresponda.
+
+\vspace{0.5cm}
+
+Y para que conste, expiden y firman el presente informe en Granada a Junio de 2018.
+
+\vspace{1cm}
+
+\textbf{El/la director(a)/es: }
+
+\vspace{5cm}
+
+\noindent \textbf{(nombre completo tutor/a/es)}
+
+\chapter*{Agradecimientos}
+Quiero expresar mi agradecimiento a todas las personas que han contribuido directa o indirectamente a la realización de este trabajo.\break
+
+En primer lugar, a mi tutor Juan Carlos Torres Cantero y cotutor Luis López Escudero por la ayuda durante el desarrollo y la correci\'on del proyecto,
+a mis amigos por las discusiones y las ideas, y a mi familia por su apoyo incondicional.\break
+
+ Finalmente, me gustaría mencionar a la comunidad de desarrolladores y recursos abiertos, especialmente los foros, artículos y proyectos relacionados con WebGPU, SDF y ray marching,
+ cuya documentación y ejemplos han sido una fuente de aprendizaje invaluable.
+
+
+
