@@ -1,13 +1,29 @@
 \chapter{Fundamentos teóricos}
 
+En este capítulo se presentan los conceptos fundamentales necesarios para comprender el desarrollo de la aplicación \textit{Copper}. Se revisan las técnicas de modelado y renderizado en gráficos por computador, con especial énfasis en las funciones de distancia y el algoritmo de \textit{ray marching}, así como las tecnologías utilizadas en la implementación: WebGPU, Dawn, WGSL, GLFW e ImGui.
 
-\section{Signed Distance Functions (SDF)}
+\section{Gráficos por computador}
+Los gráficos por computador constituyen el conjunto de técnicas y algoritmos destinados a generar imágenes a partir de descripciones matemáticas de escenas tridimensionales.
 
-\section{Ray Marching}
 
+\subsection{Rasterización}
+\subsection{Renderizado basado en rayo}
 
-%\section{Constructive Solid Geometry (CSG)}
+\section{Modelado 3D}
+\subsection{Modelado poligonal}
+El modelado poligonal se basa en representar los objetos mediante mallas de triángulos. Es el enfoque dominante en la industria por su compatibilidad con el hardware gráfico actual. Sin embargo, presenta algunas limitaciones: elevada complejidad para representar operaciones booleanas entre objetos, necesidad de gestionar grandes volúmenes de datos y dificultades para representar superficies suaves sin subdivisión intensiva.
 
-%\section{Smooth Blending}
+\subsection{Funciones de distancia (SDF)}
 
-%\section{Comparativa entre técnicas de renderizado}
+\section{Renderizado con \textit{Ray Marching}}
+El \textit{ray marching} es un método de renderizado que utiliza funciones de distancia para determinar las intersecciones de rayos con la geometría.
+
+\section{APIs gráficas y WebGPU}
+Las APIs gráficas tradicionales como OpenGL, DirectX o Vulkan permiten acceder al hardware gráfico, pero presentan problemas de portabilidad o complejidad. WebGPU surge como un estándar moderno que busca unificar el desarrollo gráfico en navegadores y aplicaciones nativas.
+
+\section{Lenguaje WGSL}
+
+\section{Herramientas auxiliares}
+\subsection{GLFW}
+
+\subsection{ImGui}

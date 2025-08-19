@@ -17,6 +17,53 @@ Trabajos como el de Crane (2005) y Evans (2006) introdujeron la idea de restring
 Sin embargo, el uso de esta técnica no está tan extendido en aplicaciones de renderizado en tiempo real, a pesar de su potencial para crear gráficos visuales y eficientes.
 \section{Motivación}
 
+Como cualquier persona nacida en los dos mil, he crecido rodeado de videojuegos y el avance en la tecnología de gráficos 3D ha sido un aspecto fascinante de esta industria. 
+Durante la carrera de informática, estudié diversas asignaturas relacionadas con gráficos por computadora, cuyos proyectos despertaron y consolidaron mi interés en este campo.
+
+El desarrollo de motores gráficos y técnicas de renderizado siempre me ha resultado un área especialmente atractiva, no solo por su complejidad técnica, 
+sino también por el impacto directo que tienen en sectores como el entretenimiento, la simulación o la realidad virtual. A lo largo de mis estudios me encontré con herramientas muy potentes, 
+pero también con la dificultad que implica dominarlas o adaptarlas a entornos experimentales. Esto me llevó a plantearme la posibilidad de crear una aplicación propia que sirviera 
+como espacio de exploración.
+
+La motivación principal de este trabajo es profundizar en tecnologías emergentes, en concreto \textbf{WebGPU}, un estándar reciente que promete unificar el desarrollo gráfico multiplataforma 
+con un acceso eficiente a las GPU modernas. Asimismo, me interesaba experimentar con el modelado mediante \textbf{funciones de distancia (SDF)}, que representan una alternativa flexible al 
+modelado poligonal clásico. Considero que la combinación de ambas tecnologías constituye un terreno de investigación con un gran potencial, tanto en aplicaciones prácticas como en entornos 
+educativos.
+
+Finalmente, este proyecto me ofrece la oportunidad de afianzar mis conocimientos en programación gráfica, shaders y arquitecturas modernas de GPU, a la vez que desarrollo un software propio 
+que pueda servir de base para futuros trabajos de investigación o aplicaciones más complejas en el ámbito del diseño 3D.
+
 \section{Descripción del problema}
 
+El campo del modelado y renderizado 3D ha estado tradicionalmente dominado por herramientas complejas y de gran envergadura, como Blender, Maya o 3ds Max. Si bien estas aplicaciones 
+ofrecen una gran potencia y versatilidad, presentan también limitaciones importantes: requieren elevados recursos de hardware, poseen curvas de aprendizaje pronunciadas y no siempre resultan 
+adecuadas para entornos de experimentación ligera o proyectos educativos.
+
+Por otro lado, las API gráficas más extendidas, como OpenGL o DirectX, han demostrado su eficacia a lo largo de los años, pero presentan restricciones en cuanto a eficiencia y portabilidad 
+en plataformas modernas. El reciente estándar \textbf{WebGPU} surge como respuesta a estas carencias, ofreciendo un modelo de programación más cercano al hardware y multiplataforma, con el 
+objetivo de unificar el desarrollo gráfico en navegadores y aplicaciones nativas.
+
+En el ámbito del modelado, el paradigma poligonal sigue siendo el más utilizado, pero alternativas como las \textbf{funciones de distancia (SDF)} permiten representar geometrías complejas 
+de manera más compacta y flexible, facilitando la combinación de primitivas y operaciones booleanas. Sin embargo, la integración de estas técnicas en aplicaciones prácticas 
+todavía es limitada, especialmente en combinación con tecnologías emergentes como WebGPU.
+
+El problema que aborda este trabajo consiste en la falta de herramientas ligeras que sirvan como demostración y entorno de experimentación para el modelado y renderizado basados en SDF 
+sobre WebGPU.
+
 \section{Objetivos}
+
+\subsection*{Objetivo general}
+El objetivo principal de este Trabajo de Fin de Grado es el desarrollo de una aplicación de diseño 3D basada en \textbf{WebGPU} y en técnicas de 
+\textbf{modelado mediante funciones de distancia (SDF)}, que permita explorar y demostrar el potencial de estas tecnologías como alternativa al modelado poligonal clásico y 
+como herramienta de experimentación en el ámbito de los gráficos por computadora.
+
+\subsection*{Objetivos específicos}
+Para alcanzar este objetivo general, se plantean los siguientes objetivos específicos:
+
+\begin{itemize}
+    \item Investigar y comprender en profundidad el funcionamiento de la API WebGPU y su integración en aplicaciones nativas mediante la librería Dawn.
+    \item Diseñar e implementar un motor de renderizado basado en \textit{ray marching} sobre funciones de distancia, capaz de representar primitivas y 
+    combinaciones mediante operaciones booleanas y suaves.
+    \item Incorporar técnicas de sombreado y efectos visuales (iluminación, sombras suaves) que mejoren la calidad del renderizado.
+    \item Desarrollar una interfaz gráfica sencilla que permita al usuario interactuar con la escena y manipular las primitivas.
+\end{itemize}
