@@ -10,7 +10,7 @@ Esto impulsó la investigación en técnicas de representación más avanzadas, 
 En el contexto del renderizado basado en funciones implícitas, las \textit{Signed Distance Functions} (SDF) no son una invención reciente, sino que tienen sus raíces en trabajos mucho más antiguos.\\
 El concepto de combinar funciones implícitas mediante operaciones booleanas se remonta al trabajo de Ricci en 1972~\cite{Ricci:1973:CGC}, y fue ampliado en 1989 por B.~Wyvill y G.~Wyvill con el modelado de \textit{soft objects}~\cite{wyvill1989}.\\
 Ese mismo año, Sandin, Hart y Kauffman aplicaron \textit{ray marching} a SDF para renderizar fractales tridimensionales~\cite{hart1989ray}.\\
-Posteriormente, en 1995, Hart documentó de nuevo la técnica, aunque la denominó erróneamente \textit{Sphere Tracing}~\cite{hart1996}.
+Posteriormente, en 1995, Hart documentó de nuevo la técnica, a la que denominó \textit{Sphere Tracing}~\cite{hart1996}.
 
 La popularización moderna de las SDF en el ámbito del \textit{renderizado en tiempo real} se debe en gran parte a la comunidad \textit{demoscene}, especialmente a partir de mediados de la década de 2000.\\
 Trabajos como el de Crane (2005) y Evans (2006) introdujeron la idea de restringir el campo a una distancia euclidiana real, mejorando el rendimiento y la calidad visual.\\
@@ -66,4 +66,24 @@ Para alcanzar este objetivo general, se plantean los siguientes objetivos espec�
     combinaciones mediante operaciones booleanas y suaves.
     \item Incorporar técnicas de sombreado y efectos visuales (iluminación, sombras suaves) que mejoren la calidad del renderizado.
     \item Desarrollar una interfaz gráfica sencilla que permita al usuario interactuar con la escena y manipular las primitivas.
+\end{itemize}
+
+
+\section{Estructura de la memoria}
+
+La presente memoria se organiza en los siguientes capítulos:
+
+\begin{itemize}
+    \item \textbf{Introducción:} Se expone el contexto del trabajo, la motivación, los objetivos planteados y la justificación de la elección de las tecnologías empleadas.
+    \item \textbf{Fundamentos teóricos:} Se revisan los conceptos clave de modelado y renderizado 3D, las funciones de distancia (\textit{Signed Distance Functions, SDF}) y el estándar WebGPU, contextualizando el trabajo en el estado actual de la tecnología.
+    \item \textbf{Arquitectura de la aplicación:} Se describe la estructura general de la aplicación Copper, detallando los principales módulos, componentes y la interacción entre ellos.
+    \item \textbf{Implementación:} Este capítulo se divide en varias secciones:
+    \begin{itemize}
+        \item \textbf{Ventana y motor de renderizado:} Se explica el proceso de inicialización de la ventana, integración con Dawn/WebGPU y el desarrollo del motor de renderizado basado en SDF y ray marching.
+        \item \textbf{Controles e interacción:} Se detalla la implementación de los controles de cámara y de manipulación de objetos mediante la interfaz gráfica.
+        \item \textbf{Shaders y efectos visuales:} Se describe el desarrollo de los shaders WGSL utilizados, incluyendo técnicas de sombreado, iluminación y efectos visuales implementados.
+    \end{itemize}
+    \item \textbf{Pruebas y validación:} Se presentan las pruebas realizadas para evaluar el rendimiento, la estabilidad y la calidad visual de la aplicación, así como los resultados obtenidos.
+    \item \textbf{Conclusiones y trabajos futuros:} Se realiza un balance del trabajo realizado, se revisa el grado de cumplimiento de los objetivos y se plantean posibles líneas de investigación y desarrollo futuras.
+    \item \textbf{Bibliografía y anexos:} Se recopilan las referencias bibliográficas consultadas y se incluyen materiales complementarios relevantes para la comprensión y reproducibilidad del trabajo.
 \end{itemize}
