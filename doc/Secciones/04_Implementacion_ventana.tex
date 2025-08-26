@@ -1,1 +1,159 @@
-\chapter{Implementación: Ventana}
+\chapter{Implementación del módulo Ventana}
+
+\section{Introducción}
+
+El módulo \textbf{Ventana} constituye el punto de entrada visual y de
+interacción para el sistema Copper. Este componente es responsable de la
+creación, gestión y destrucción de la ventana principal de la aplicación, así
+como del manejo de eventos de usuario y del ciclo de vida asociado a la
+interfaz gráfica.
+
+\section{Diseño y estructura de la clase Window}
+
+La clase \texttt{Window}, ubicada en \texttt{src/ui/Window.h} y
+\texttt{src/ui/Window.cpp}, encapsula toda la funcionalidad relacionada con la
+ventana.
+
+\subsection{Atributos principales}
+
+\begin{itemize}
+    \item \texttt{GLFWwindow* window}: Puntero al objeto de ventana gestionado por GLFW.
+    \item \texttt{uint32\_t windowWidth, windowHeight}: Dimensiones internas de la ventana, actualizadas dinámicamente.
+\end{itemize}
+
+\subsection{Métodos públicos}
+
+\begin{itemize}
+    \item \texttt{bool Initialize(Renderer *renderer)}: Inicializa la ventana, configurando parámetros gráficos y de interacción, y registra los callbacks de eventos. La ventana se crea con una relación de aspecto fija (16:9), facilitando la integración con el pipeline gráfico y evitando distorsiones.
+    \item \texttt{GLFWwindow* getWindow()}: Permite acceder al objeto de ventana desde otros módulos, especialmente el \texttt{Renderer} y la interfaz gráfica.
+    \item \texttt{uint32\_t getWindowWidth()}, \texttt{getWindowHeight()}: Proporcionan las dimensiones actuales, utilizadas en la configuración de la proyección y el cálculo del aspecto.
+    \item \texttt{void setWindowSize(uint32\_t width, uint32\_t height)}: Permite modificar las dimensiones internas de la ventana, útil en escenarios de redimensionado.
+    \item \texttt{void Destroy()}: Libera los recursos asociados a la ventana, llamando a \texttt{glfwDestroyWindow}.
+    \item \texttt{void SetWindowUserPointer(void* pointer)}: Permite asociar un puntero de usuario (normalmente, el \texttt{Renderer}) para su acceso desde los callbacks de eventos.
+\end{itemize}
+
+\subsection{Callbacks de eventos}
+
+La clase Window define y registra varios callbacks estáticos:
+
+\begin{itemize}
+    \item \texttt{FramebufferSizeCallback(GLFWwindow* window, int width, int height)}: Se ejecuta cuando la ventana es redimensionada. Utiliza el puntero de usuario para acceder al \texttt{Renderer} y llama a su método \texttt{OnResize()}, lo que desencadena la reconfiguración de los buffers gráficos y la superficie de renderizado. Esto garantiza que el aspecto visual de la escena se mantenga correcto ante cualquier cambio de tamaño.
+    \item \texttt{MouseButtonCallback(GLFWwindow *window, int button, int action, int mods)}: Captura los eventos de pulsación de botones de ratón. Si la interfaz gráfica (ImGui) no está capturando el ratón, el evento se propaga al método \texttt{OnMouseButton} del \texttt{Renderer}, permitiendo la interacción directa con los objetos 3D a partir de los gizmos.
+\end{itemize}
+
+El registro de los callbacks se realiza en el método \texttt{Initialize},
+asegurando que todos los eventos relevantes sean gestionados desde el inicio de
+la aplicación.
+
+\section{Proceso de inicialización y configuración}
+
+El proceso de inicialización de la ventana sigue una secuencia de pasos bien
+definida:
+
+\begin{enumerate}
+    \item Llamada a \texttt{glfwInit()} para inicializar la biblioteca GLFW.
+    \item Configuración de los hints de ventana (\texttt{GLFW\_CLIENT\_API},
+          \texttt{GLFW\_RESIZABLE}) para deshabilitar la API gráfica por defecto y
+          permitir el redimensionado.
+    \item Obtención del monitor y modo de vídeo principal para adaptar la ventana al
+          entorno gráfico del usuario.
+    \item Creación de la ventana con \texttt{glfwCreateWindow}, ajustando el tamaño al
+          modo de vídeo y estableciendo el título (\texttt{"Copper"}).
+    \item Fijación de la relación de aspecto mediante \texttt{glfwSetWindowAspectRatio},
+          asegurando que la escena 3D se muestre correctamente.
+    \item Registro de los callbacks de eventos (\texttt{FramebufferSizeCallback},
+          \texttt{MouseButtonCallback}).
+    \item Configuración de los modos de entrada (\texttt{GLFW\_CURSOR},
+          \texttt{GLFW\_RAW\_MOUSE\_MOTION}) para gestionar el cursor y la interacción
+          avanzada.
+\end{enumerate}
+
+Este diseño asegura que la ventana esté lista para recibir eventos y para
+integrarse con el sistema de renderizado desde el primer momento.
+
+\section{Gestión avanzada de eventos}
+
+El manejo de eventos en la ventana es fundamental para la interactividad del
+sistema. El diseño implementado permite:
+
+\begin{itemize}
+    \item \textbf{Sincronización con el pipeline gráfico}: Los eventos de redimensionado se propagan automáticamente al \texttt{Renderer}, que actualiza buffers, superficie y matrices de proyección, manteniendo la coherencia visual.
+    \item \textbf{Integración con ImGui}: Antes de procesar eventos de ratón, se comprueba si ImGui está capturando el ratón, evitando conflictos entre la interfaz gráfica y la manipulación 3D.
+    \item \textbf{Extensibilidad}: Aunque el callback de movimiento de ratón (\texttt{MouseMoveCallback}) está declarado, no se encuentra activado por defecto, permitiendo su futura ampliación sin modificar la estructura principal.
+\end{itemize}
+
+El siguiente fragmento de código muestra la gestión y propagación de eventos
+(\texttt{Window.cpp}):
+
+\begin{verbatim}
+void Window::MouseButtonCallback(GLFWwindow *window, int button, int action, int mods) {
+    auto* renderer = static_cast<Renderer*>(glfwGetWindowUserPointer(window));
+    if (renderer != nullptr && !ImGui::GetIO().WantCaptureMouse) {
+        renderer->OnMouseButton(button, action);
+    }
+}
+\end{verbatim}
+
+\section{Interacción con el ciclo de vida de la aplicación}
+
+La ventana se integra en el ciclo de vida de la aplicación a través del módulo
+\texttt{Core} (\texttt{src/core/Core.cpp}, \texttt{src/core/Core.h}), que
+gestiona su inicialización y destrucción. El flujo es el siguiente:
+
+\begin{enumerate}
+    \item \texttt{Core::Initialize()} llama a \texttt{window.Initialize(&renderer)} y a \texttt{renderer.Init(&window)}, asegurando que la ventana y el sistema gráfico están listos antes de iniciar el bucle principal.
+    \item Durante la ejecución, \texttt{Core::MainLoop()} llama a
+          \texttt{glfwPollEvents()} y a \texttt{renderer.Render()}, manteniendo la
+          actualización continua de la ventana y la escena.
+    \item Al finalizar, \texttt{Core::Terminate()} invoca \texttt{window.Destroy()} y
+          \texttt{glfwTerminate()}, liberando todos los recursos y evitando fugas de
+          memoria.
+\end{enumerate}
+
+\section{Decisiones técnicas y justificación}
+
+La elección de GLFW como biblioteca para la gestión de ventanas se justifica
+por varios motivos:
+
+\begin{itemize}
+    \item \textbf{Portabilidad}: GLFW es multiplataforma, permitiendo ejecutar Copper en diferentes sistemas operativos sin cambios en el código.
+    \item \textbf{Compatibilidad}: La integración con WebGPU y con ImGui está ampliamente soportada, simplificando el desarrollo y la depuración.
+    \item \textbf{Modularidad}: El diseño de la clase \texttt{Window} permite modificar el backend de ventanas sin afectar al resto del sistema, siguiendo el principio de separación de responsabilidades.
+    \item \textbf{Eficiencia}: La gestión nativa de eventos y la actualización dinámica de los buffers gráficos optimizan el rendimiento y la fluidez de la aplicación.
+\end{itemize}
+
+Estas decisiones están alineadas con las recomendaciones de la literatura
+técnica (Sommerville, 2016) y con las guías docentes de la ETSIIT, que
+aconsejan implementar componentes modulares, eficientes y fácilmente
+mantenibles.
+
+\section{Interacción con otros componentes}
+
+El módulo Ventana está estrechamente integrado con:
+
+\begin{itemize}
+    \item \texttt{Renderer}: Recibe y procesa los eventos relevantes para actualizar el pipeline gráfico y la escena.
+    \item \texttt{Interfaz gráfica (GUI)}: Sirve como base para la integración de ImGui, permitiendo la edición y visualización de parámetros y objetos.
+    \item \texttt{Subsistema de cámara y controles}: Los eventos de entrada capturados por la ventana se transmiten al controlador de cámara y gizmos, facilitando la manipulación interactiva de la escena.
+\end{itemize}
+
+La arquitectura facilita la extensión futura del sistema, permitiendo añadir
+nuevas funcionalidades (por ejemplo, soporte para pantallas múltiples o
+diferentes sistemas de entrada) sin modificar la lógica principal.
+
+\section{Flujo de datos y ciclo de vida}
+
+Durante la ejecución de la aplicación, la ventana realiza las siguientes
+tareas:
+
+\begin{itemize}
+    \item Recoge eventos de entrada (ratón, teclado, redimensionado) y los distribuye
+          entre los módulos correspondientes.
+    \item Mantiene actualizadas las dimensiones de la ventana, permitiendo al renderer
+          ajustar el aspecto y las matrices de proyección.
+    \item Facilita la integración de la interfaz gráfica y la visualización de los
+          controles de usuario.
+\end{itemize}
+
+El ciclo de vida completo está gestionado por el módulo \texttt{Core},
+garantizando la correcta inicialización y liberación de recursos.

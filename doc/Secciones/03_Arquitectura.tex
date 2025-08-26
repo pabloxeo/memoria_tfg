@@ -1,5 +1,169 @@
-\chapter{Arquitectura}
+\chapter{Arquitectura del sistema}
 
-\section{Tecnologías utilizadas}
+La arquitectura de \textbf{Copper} ha sido concebida siguiendo principios de
+modularidad, mantenibilidad y claridad estructural. A continuación se detallan
+los diferentes módulos que componen el sistema, describiendo su funcionalidad y
+las interacciones que mantienen entre sí, con referencias directas al código
+fuente.
 
-\section{Estructura del proyecto}
+\section{Módulo Core}
+
+El módulo \textbf{Core} (\texttt{src/core/Core.cpp}, \texttt{src/core/Core.h})
+es el responsable de orquestar el ciclo de vida de la aplicación. Sus funciones
+principales incluyen:
+\begin{itemize}
+    \item \textbf{Inicialización}: Llama a los métodos de inicialización de los módulos \texttt{Window} y \texttt{Renderer} para preparar el entorno gráfico y la ventana principal.
+    \item \textbf{Bucle principal}: Ejecuta el método \texttt{MainLoop()}, que gestiona los eventos y delega el renderizado de la escena.
+    \item \textbf{Gestión de estado}: Permite saber si la aplicación sigue ejecutándose (\texttt{IsRunning()}) y controla el cierre ordenado de recursos (\texttt{Terminate()}).
+\end{itemize}
+
+\section{Módulo Window}
+
+El módulo \textbf{Window} (\texttt{src/ui/Window.cpp},
+\texttt{src/ui/Window.h}) se encarga de la creación y gestión de la ventana
+principal de la aplicación, utilizando GLFW. Sus funciones incluyen:
+\begin{itemize}
+    \item \textbf{Configuración de la ventana}: Establece parámetros como el tamaño, aspecto y modo de interacción.
+    \item \textbf{Gestión de eventos}: Implementa callbacks para eventos de redimensionado y de ratón, que se propagan al módulo \texttt{Renderer}.
+    \item \textbf{Interfaz con el sistema}: Abstrae la interacción con el sistema operativo y facilita la obtención de dimensiones y el manejo del ciclo de vida de la ventana.
+\end{itemize}
+Esto permite que la ventana sea independiente del motor de renderizado y fácil de modificar o ampliar.
+
+\section{Módulo Renderer}
+
+El \textbf{Renderer} (\texttt{src/core/Renderer.cpp},
+\texttt{src/core/Renderer.h}) es el motor gráfico del sistema. Sus principales
+responsabilidades son:
+\begin{itemize}
+    \item \textbf{Inicialización de gráficos}: Configura el contexto de WebGPU, las superficies y los buffers necesarios para el renderizado.
+    \item \textbf{Ciclo de renderizado}: Gestiona el bucle de renderizado, actualizando los datos de la escena y llamando a la función \texttt{Render()} en cada frame.
+    \item \textbf{Gestión de uniforms}: Actualiza los uniforms (matriz MVP, posición de luz, tamaño de ventana, etc.) y los envía al shader.
+    \item \textbf{Coordinación de módulos}: Instancia y gestiona los módulos \texttt{Camera}, \texttt{CameraController}, \texttt{GizmoControls}, \texttt{Coder} e \texttt{Interfaz (GUI)}, asegurando la comunicación entre ellos.
+    \item \textbf{Gestión de interacción}: Recoge eventos de usuario (ratón, teclado) y los distribuye entre los controles de cámara, gizmo y selección de objetos.
+\end{itemize}
+Además, el renderer es responsable de decidir cuándo se debe actualizar el
+pipeline gráfico, por ejemplo, al modificar objetos SDF o parámetros visuales.
+
+\section{Subsistema de Cámara}
+
+\textbf{Camera} y \textbf{CameraController} (\texttt{src/core/Camera.cpp}, \texttt{src/core/Camera.h}, \texttt{src/core/CameraController.cpp}, \texttt{src/core/CameraController.h}) forman el subsistema encargado de gestionar la vista de la escena 3D.
+\begin{itemize}
+    \item \textbf{Camera}: Mantiene el estado (posición, centro, orientación) y permite obtener la matriz de vista y los vectores de orientación.
+    \item \textbf{CameraController}: Implementa la lógica de interacción con el usuario (rotaciones, traslaciones, zoom) mediante eventos de ratón y teclado, actualizando la posición y orientación de la cámara en tiempo real.
+    \item \textbf{Integración}: La cámara es utilizada tanto por el \texttt{Renderer} como por las herramientas de manipulación de objetos (\texttt{GizmoControls}).
+\end{itemize}
+
+\section{Módulo Coder}
+
+El módulo \textbf{Coder} (\texttt{src/core/Coder.cpp},
+\texttt{src/core/Coder.h}) se especializa en la generación dinámica de código
+shader para el renderizado de objetos SDF. Sus funciones incluyen:
+\begin{itemize}
+    \item \textbf{Gestión de objetos}: Permite añadir, modificar y eliminar objetos SDF (esferas, cajas, conos, cilindros) y operaciones entre ellos (unión, intersección, sustracción).
+    \item \textbf{Generación de shaders}: Construye el código shader que será utilizado en WebGPU para renderizar la escena y para operaciones de picking.
+    \item \textbf{Selección y edición}: Gestiona el objeto actualmente seleccionado y expone métodos para editar sus propiedades y operación.
+    \item \textbf{Serialización}: Permite guardar y cargar escenas desde fichero, facilitando la persistencia y el intercambio de datos.
+\end{itemize}
+
+\section{Módulo GizmoControls}
+
+El módulo \textbf{GizmoControls} (\texttt{src/core/GizmoControls.cpp},
+\texttt{src/core/GizmoControls.h}) proporciona herramientas para la
+manipulación visual e interactiva de los objetos SDF en la escena. Sus
+responsabilidades son:
+\begin{itemize}
+    \item \textbf{Picking y manipulación}: Permite seleccionar e interactuar con los objetos mediante gizmos (ejes, planos de traslación).
+    \item \textbf{Sincronización}: Mantiene la coherencia entre la posición del objeto, la cámara y el estado de la interacción.
+    \item \textbf{Integración con el renderizado}: Utiliza la cámara y los datos de la escena para calcular las transformaciones y la interacción del usuario.
+\end{itemize}
+
+\section{Interfaz gráfica (GUI)}
+
+El módulo \textbf{Interfaz} (\texttt{src/ui/Interfaz.cpp},
+\texttt{src/ui/Interfaz.h}) implementa la interfaz gráfica de usuario
+utilizando ImGui. Sus funciones principales son:
+\begin{itemize}
+    \item \textbf{Edición de objetos}: Permite modificar las propiedades de los objetos seleccionados (posición, tamaño, color, tipo, operación).
+    \item \textbf{Gestión de la escena}: Ofrece controles para añadir, eliminar y editar objetos, así como para guardar y cargar escenas.
+    \item \textbf{Control de parámetros globales}: Permite ajustar parámetros de iluminación, visualización y opciones de renderizado.
+    \item \textbf{Comunicación}: Interactúa con los módulos \texttt{Coder} y \texttt{Renderer} para aplicar los cambios en tiempo real.
+\end{itemize}
+
+\section{Flujo de datos e interacción}
+
+El flujo de datos e interacción entre módulos se organiza de la siguiente
+manera:
+\begin{itemize}
+    \item \texttt{Core} inicializa \texttt{Window} y \texttt{Renderer}.
+    \item \texttt{Renderer} instancia y coordina \texttt{Camera}, \texttt{CameraController}, \texttt{GizmoControls} y \texttt{Coder}.
+    \item \texttt{CameraController} y \texttt{GizmoControls} gestionan la interacción directa del usuario.
+    \item \texttt{Interfaz} permite la edición visual y comunica los cambios a \texttt{Coder} y \texttt{Renderer}.
+    \item \texttt{Coder} actualiza el shader y los objetos SDF, transmitiendo la información al renderer para el ciclo de renderizado.
+\end{itemize}
+
+\section{Diagrama de arquitectura}
+
+\begin{figure}[H]
+    \centering
+    \resizebox{0.95\linewidth}{!}{%
+        \begin{tikzpicture}[
+            module/.style={rectangle, rounded corners, draw=black, thick, minimum width=2.8cm, minimum height=1cm, align=center, fill=gray!10},
+            arrow/.style={-{Latex[length=3mm]}, thick},
+            node distance=1.5cm and 2cm
+            ]
+
+            % Nodos principales (jerarquía vertical)
+            \node[module] (core) {Core};
+
+            \node[module, below left=of core] (window) {Window};
+            \node[module, below right=of core] (renderer) {Renderer};
+
+            % Renderer dependencias
+            \node[module, below=of renderer] (camera) {Camera};
+            \node[module, right=of camera] (cameracontroller) {CameraController};
+            \node[module, right=of renderer] (gizmo) {GizmoControls};
+            \node[module, left=of camera] (coder) {Coder};
+
+            % Interfaz a la izquierda
+            \node[module, left=of coder] (interfaz) {Interfaz};
+
+            % Flechas Core
+            \draw[arrow] (core) -- (window);
+            \draw[arrow] (core) -- (renderer);
+
+            % Flechas Renderer
+            \draw[arrow] (renderer) -- (camera);
+            \draw[arrow] (renderer) -- (cameracontroller);
+            \draw[arrow] (renderer) -- (gizmo);
+            \draw[arrow] (renderer) -- (coder);
+
+            % Interacción de usuario
+            \draw[arrow] (cameracontroller) -- (renderer);
+            \draw[arrow] (gizmo) -- (renderer);
+
+            % Interfaz comunica
+            \draw[arrow] (interfaz) -- (coder);
+            \draw[arrow] (interfaz) -- (renderer);
+
+            % Coder actualiza
+            \draw[arrow] (coder) -- (renderer);
+
+        \end{tikzpicture}
+    }
+    \caption{Arquitectura de Copper: relación entre módulos principales.}
+    \label{fig:arquitectura-copper}
+\end{figure}
+
+\section{Justificación de la arquitectura}
+
+La estructura modular y jerárquica implementada en Copper permite separar
+responsabilidades, facilitar el mantenimiento y la escalabilidad del sistema.
+Las decisiones de diseño han sido tomadas para maximizar la claridad, la
+reutilización y la posibilidad de extensión futura del sistema de acuerdo a los
+siguientes criterios:
+\begin{itemize}
+    \item \textbf{Separación de responsabilidades}: El diseño modular permite que cada componente (núcleo, renderizado, cámara, gestión de objetos, manipulación, interfaz) se encargue de una función específica, lo que facilita la comprensión, el mantenimiento y la evolución del sistema. Por ejemplo, \texttt{Core} sólo gestiona el ciclo de vida y delega el renderizado a \texttt{Renderer}, mientras que la creación y edición de objetos SDF queda aislada en \texttt{Coder}.
+    \item \textbf{Facilidad de extensión}: La existencia de clases independientes para cada tipo de objeto (\texttt{sphere}, \texttt{box}, \texttt{cone}, \texttt{cylinder}) y para operaciones (\texttt{union}, \texttt{subtract}, \texttt{intersection}, etc.) en \texttt{Coder} permite añadir nuevos tipos u operaciones sin modificar el núcleo del sistema, como se observa en los métodos \texttt{addSphere}, \texttt{addBox}, etc. [\texttt{src/core/Coder.cpp}, \texttt{src/core/Coder.h}].
+    \item \textbf{Interactividad y desacoplamiento}: Los subsistemas de cámara y control de objetos (Camera/CameraController, GizmoControls) están desacoplados de la lógica de renderizado, permitiendo que la interacción del usuario se procese de forma independiente y se integre fácilmente con la interfaz gráfica (\texttt{Interfaz.cpp}). Esto se observa en la gestión de eventos de ratón y teclado, donde cada módulo recibe únicamente los datos que necesita y actualiza su estado local.
+    \item \textbf{Actualización eficiente del renderizado}: El sistema de notificación de cambios (\texttt{pipelineDirty} en \texttt{Renderer}, activado por modificaciones en \texttt{Coder} o en la escena) permite que el pipeline gráfico se actualice sólo cuando es necesario, optimizando el rendimiento y evitando cálculos redundantes [\texttt{src/core/Renderer.cpp}].
+\end{itemize}

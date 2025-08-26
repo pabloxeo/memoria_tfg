@@ -1,1 +1,152 @@
-\chapter{Implementación: Controles}
+\chapter{Implementación y diseño de los controles}
+
+\section{Introducción}
+
+El sistema de controles en Copper permite la manipulación de la escena 3D y la
+interacción directa con los objetos SDF (Signed Distance Fields). Este capítulo
+describe en profundidad la arquitectura, matemáticas y tecnologías utilizadas
+(especialmente la librería \texttt{glm}), y se divide en tres grandes
+apartados: controles de interfaz gráfica (ImGui), controles de gizmo
+(GizmoControls) y controles de cámara (CameraController).
+
+\section{Fundamentos matemáticos y uso de \texttt{glm}}
+
+Copper utiliza \textbf{glm} (OpenGL Mathematics) como librería principal para
+el manejo de vectores, matrices y cuaterniones, esenciales en la transformación
+y manipulación de objetos 3D.
+
+\subsection{Transformaciones en el espacio 3D}
+
+En los archivos \texttt{Camera.cpp}, \texttt{CameraController.cpp} y
+\texttt{GizmoControls.cpp}, se emplea \texttt{glm} para:
+\begin{itemize}
+    \item Representar posiciones y direcciones mediante \texttt{glm::vec3}.
+    \item Calcular matrices de vista (\texttt{glm::mat4}), rotaciones con cuaterniones
+          (\texttt{glm::quat}), y transformaciones de objetos y cámara.
+    \item Realizar operaciones de producto escalar, normalización, traslaciones y
+          rotaciones.
+\end{itemize}
+Por ejemplo, la actualización de la matriz de vista en \texttt{Camera.cpp} se realiza con:
+\begin{verbatim}
+this->view_matrix = glm::lookAt(this->eye, this->center, this->up);
+\end{verbatim}
+Esto aplica la transformación de cámara estándar, permitiendo la navegación y
+manipulación de la escena.
+
+\subsection{Rotaciones y cuaterniones}
+
+El manejo de rotaciones evita el problema de gimbal lock y permite una
+navegación suave. En \texttt{CameraController.cpp}, se construyen cuaterniones
+para rotar la cámara y los objetos:
+\begin{verbatim}
+glm::quat rot_matrix_y = glm::angleAxis(this->vert_angle, glm::vec3(1, 0, 0));
+glm::quat rot_matrix_x = glm::angleAxis(this->horiz_angle, glm::vec3(0, 1, 0));
+glm::quat q = (rot_matrix_y * rot_matrix_x);
+\end{verbatim}
+La matriz de vista se actualiza aplicando estas rotaciones, y las
+transformaciones se propagan a los controles de gizmo y objetos.
+
+\subsection{Intersecciones y picking}
+
+Para la manipulación mediante gizmos y picking de objetos, se emplean cálculos
+geométricos como la intersección de líneas y planos
+(\texttt{planeLineIntersection}) y el cálculo de rayos desde la cámara usando
+coordenadas UV normalizadas.
+
+\section{Controles de interfaz gráfica: ImGui}
+
+El módulo de interfaz gráfica (\texttt{Interfaz.cpp}, \texttt{Interfaz.h})
+utiliza \textbf{ImGui} para implementar menús, sliders y herramientas de
+edición.
+
+\subsection{Estructura y funciones principales}
+
+La clase \texttt{Interfaz} interactúa con los módulos \texttt{Coder} y
+\texttt{Renderer} para:
+\begin{itemize}
+    \item Mostrar propiedades de objetos seleccionados (posición, color, tipo, tamaño).
+    \item Permitir la edición directa mediante sliders y campos de entrada.
+    \item Gestionar la creación, edición y borrado de objetos SDF.
+    \item Proporcionar controles globales de la escena (luz, renderizado, operaciones).
+    \item Implementar la gestión de archivos para guardar y cargar escenas.
+\end{itemize}
+
+\subsection{Ejemplo de interacción}
+
+Al seleccionar un objeto, ImGui presenta sus propiedades y permite
+modificarlas:
+\begin{verbatim}
+ImGui::SliderFloat("X", &selectedObject.x, -10.0f, 10.0f);
+ImGui::ColorEdit3("Color", &selectedObject.r);
+// Para esferas:
+ImGui::SliderFloat("Radius", &selectedObject.size[0], 0.1f, 5.0f);
+\end{verbatim}
+Cada cambio marca el pipeline como "dirty" para que el renderizador actualice
+la escena en tiempo real.
+
+\section{Controles de gizmo: GizmoControls}
+
+El módulo \texttt{GizmoControls} (\texttt{GizmoControls.cpp},
+\texttt{GizmoControls.h}) permite la manipulación visual e interactiva de los
+objetos SDF seleccionados mediante gizmos (flechas, planos).
+
+\subsection{Arquitectura y flujo de interacción}
+
+\begin{itemize}
+    \item \textbf{Inicialización}: Al seleccionar un objeto y pulsar sobre el gizmo, se inicia la manipulación (\texttt{initDrag}).
+    \item \textbf{Picking}: Se determina qué parte del gizmo ha sido seleccionada (eje, plano) usando ray marching y cálculos de distancia mínimos.
+    \item \textbf{Arrastre y movimiento}: El punto de intersección inicial se calcula con \texttt{gizmoIntersection} y se actualiza en tiempo real mientras el usuario mueve el ratón.
+    \item \textbf{Actualización de propiedades}: El centro del objeto se actualiza en \texttt{update}, propagando el nuevo valor al objeto seleccionado en el módulo \texttt{Coder}.
+\end{itemize}
+
+\subsection{Matemáticas implicadas}
+
+Se emplean funciones de distancia (SDF) para flechas y planos, y
+transformaciones con matrices y cuaterniones para rotar y trasladar los gizmos
+respecto al objeto y la cámara. Ejemplo de cálculo de intersección de un rayo
+con un plano:
+\begin{verbatim}
+float d = glm::dot(planeNormal, planePoint - linePoint) / glm::dot(planeNormal, lineDirection);
+return linePoint + d * lineDirection;
+\end{verbatim}
+
+\subsection{Sincronización con cámara y escena}
+
+El gizmo se actualiza en función de la cámara activa y el aspecto de la
+ventana, asegurando coherencia entre la visualización y la interacción.
+
+\section{Controles de cámara: CameraController}
+
+El módulo \texttt{CameraController} (\texttt{CameraController.cpp},
+\texttt{CameraController.h}) gestiona la navegación de la cámara en la escena,
+aplicando transformaciones mediante eventos de ratón y teclado.
+
+\subsection{Estructura y flujo de eventos}
+
+\begin{itemize}
+    \item \textbf{Zoom}: El scroll del ratón modifica el radio de la cámara alrededor del centro, actualizando la vista.
+    \item \textbf{Rotación}: El arrastre con el botón izquierdo aplica rotaciones sobre los ángulos vertical y horizontal, usando cuaterniones para evitar gimbal lock.
+    \item \textbf{Traslación}: El arrastre con el botón derecho permite mover el centro de la cámara en el plano.
+    \item \textbf{Gestión de estados}: El controlador mantiene el estado del ratón y actualiza la cámara solo cuando es necesario, evitando interferencias con la interfaz gráfica.
+\end{itemize}
+
+\subsection{Matemáticas y código relevante}
+
+Las transformaciones se basan en las funciones de \texttt{glm} para matrices y
+cuaterniones. Ejemplo de rotación acumulada:
+\begin{verbatim}
+glm::quat rot_matrix_y = glm::angleAxis(this->vert_angle, glm::vec3(1, 0, 0));
+glm::quat rot_matrix_x = glm::angleAxis(this->horiz_angle, glm::vec3(0, 1, 0));
+glm::quat q = (rot_matrix_y * rot_matrix_x);
+this->total_rotation = q;
+this->update_view_matrix();
+\end{verbatim}
+La matriz de vista se recalcula en función de la posición y orientación
+deseadas.
+
+\subsection{Integración con el resto del sistema}
+
+El controlador de cámara está sincronizado con la ventana principal y el
+renderizador, recibiendo eventos de entrada (mouse, scroll) y actualizando la
+matriz de vista que se utiliza en el ciclo de renderizado y en la manipulación
+de gizmos.
