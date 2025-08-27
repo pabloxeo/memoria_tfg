@@ -1,1 +1,109 @@
-\chapter{Implementación: Shaders}
+\chapter{Implementación de los Shaders en Copper}
+
+\section{Introducción}
+
+En este capítulo se describe la implementación de los shaders en el sistema
+Copper, explicando cómo se genera el código shader, su funcionamiento, y el
+proceso mediante el cual se parametriza y escribe el código según la escena y
+los objetos definidos por el usuario.
+
+\section{Arquitectura General}
+
+Copper utiliza renderizado basado en shaders escritos en WGSL (WebGPU Shading
+Language), generando el código de manera dinámica a partir de la descripción de
+la escena. La clase principal responsable de esta tarea es \texttt{Coder}, que
+compone el código shader en tiempo de ejecución según los objetos y operaciones
+definidos.
+
+\section{Funcionamiento General}
+
+El ciclo de generación y uso de shaders sigue el siguiente flujo:
+
+\begin{enumerate}
+    \item El usuario define objetos geométricos (esferas, cajas, conos, cilindros) y
+          operaciones booleanas (unión, intersección, sustracción suave, etc.) a través
+          de la interfaz gráfica.
+    \item Cada vez que la escena cambia, la clase \texttt{Coder} reconstruye el código
+          shader combinando funciones SDF (Signed Distance Function) para cada objeto y
+          operación.
+    \item El código generado incluye la lógica para renderizado normal y picking
+          (selección de objetos).
+    \item El shader se compila y se utiliza en la pipeline gráfica de WebGPU.
+\end{enumerate}
+
+\section{Generación Dinámica del Código Shader}
+
+La clase \texttt{Coder} mantiene una lista de objetos y sus propiedades (tipo,
+posición, tamaño, color, operación). Cuando la escena cambia, el método
+\texttt{generateShaderCode()} produce el código WGSL correspondiente. El
+proceso es el siguiente:
+
+\begin{itemize}
+    \item Para cada objeto, se genera una función SDF específica que calcula la distancia
+          y el color.
+    \item Se combinan las SDFs utilizando las operaciones booleanas indicadas (por
+          ejemplo, unión suave, intersección, sustracción).
+    \item Se añade lógica para picking, de modo que cada objeto pueda ser seleccionado
+          mediante raycasting.
+    \item Si hay objetos auxiliares como gizmos, se añaden funciones SDF para estos
+          elementos.
+    \item El código generado se concatena junto con una base estándar que define la
+          estructura de los shaders, funciones de iluminación, ray marching, etc.
+\end{itemize}
+
+\section{Ejemplo de Código Generado}
+
+El siguiente fragmento ilustra parte del código shader que se puede generar
+dinámicamente:
+
+\begin{lstlisting}[language=WGSL, caption={Fragmento de código WGSL generado}]
+fn sdf(pos: vec3<f32>) -> DistanceColor {
+    var result = DistanceColor(1e6, vec3<f32>(0.0, 0.0, 0.0), -1);
+    var sphere0: DistanceColor = sdf_sphere(pos, uniforms.position, uniforms.size[0], uniforms.color, 0);
+    result = opSmoothUnion(result, sphere0, 0.6);
+    // ... otros objetos y operaciones
+    return result;
+}
+\end{lstlisting}
+
+\section{Personalización y Parametrización}
+
+La generación del shader se adapta a los parámetros definidos por el usuario:
+
+\begin{itemize}
+    \item \textbf{Parámetros geométricos}: posición, tamaño y color de cada objeto se insertan directamente en el código WGSL.
+    \item \textbf{Operaciones}: el tipo de operación (unión, intersección, sustracción suave) determina qué función de combinación se utiliza.
+    \item \textbf{Picking}: se genera una función especial que permite identificar qué objeto ha sido seleccionado por el usuario.
+    \item \textbf{Gizmos}: si el usuario selecciona un objeto, se generan SDFs adicionales para los gizmos de manipulación.
+\end{itemize}
+
+\section{Funciones SDF y Operaciones Booleanas}
+
+Cada tipo de objeto tiene su propia función SDF:
+
+\begin{itemize}
+    \item \texttt{sdf\_sphere}: calcula la distancia de un punto al borde de una esfera.
+    \item \texttt{sdf\_box}: calcula la distancia a una caja.
+    \item \texttt{sdf\_cone}, \texttt{sdf\_cylinder}: para conos y cilindros.
+    \item \texttt{sdf\_plane}: para planos.
+\end{itemize}
+
+Las combinaciones entre objetos se realizan con operadores booleanos suaves:
+
+\begin{lstlisting}[language=WGSL]
+fn opSmoothUnion(d1: DistanceColor, d2: DistanceColor, k: f32) -> DistanceColor { ... }
+fn opSmoothIntersect(d1: DistanceColor, d2: DistanceColor, k: f32) -> DistanceColor { ... }
+fn opSmoothSubtract(d1: DistanceColor, d2: DistanceColor, k: f32) -> DistanceColor { ... }
+\end{lstlisting}
+
+\section{Renderizado y Ray Marching}
+
+El shader utiliza ray marching para recorrer la escena y determinar la
+superficie más cercana en cada píxel. Para cada paso:
+
+\begin{itemize}
+    \item Se evalúa la función SDF combinada para todos los objetos.
+    \item Al encontrar una superficie (distancia menor a un umbral), se calcula el color
+          aplicando iluminación tipo Blinn-Phong.
+    \item Se calcula el sombreado y las normales mediante diferencias finitas.
+\end{itemize}

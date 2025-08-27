@@ -161,6 +161,7 @@ responsabilidades, facilitar el mantenimiento y la escalabilidad del sistema.
 Las decisiones de diseño han sido tomadas para maximizar la claridad, la
 reutilización y la posibilidad de extensión futura del sistema de acuerdo a los
 siguientes criterios:
+
 \begin{itemize}
     \item \textbf{Separación de responsabilidades}: El diseño modular permite que cada componente (núcleo, renderizado, cámara, gestión de objetos, manipulación, interfaz) se encargue de una función específica, lo que facilita la comprensión, el mantenimiento y la evolución del sistema. Por ejemplo, \texttt{Core} sólo gestiona el ciclo de vida y delega el renderizado a \texttt{Renderer}, mientras que la creación y edición de objetos SDF queda aislada en \texttt{Coder}.
     \item \textbf{Facilidad de extensión}: La existencia de clases independientes para cada tipo de objeto (\texttt{sphere}, \texttt{box}, \texttt{cone}, \texttt{cylinder}) y para operaciones (\texttt{union}, \texttt{subtract}, \texttt{intersection}, etc.) en \texttt{Coder} permite añadir nuevos tipos u operaciones sin modificar el núcleo del sistema, como se observa en los métodos \texttt{addSphere}, \texttt{addBox}, etc. [\texttt{src/core/Coder.cpp}, \texttt{src/core/Coder.h}].
