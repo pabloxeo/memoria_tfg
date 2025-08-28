@@ -2,10 +2,10 @@
 
 El modelado y renderizado en 3D es posible gracias a una serie de técnicas
 matemáticas y computacionales que permiten representar, manipular y visualizar
-geometría en entornos virtuales. Copper se apoya principalmente en el modelado
-mediante funciones de distancia con signo (SDF), el renderizado por \textit{ray
-    marching} y el uso del estándar gráfico WebGPU. Este capítulo describe en
-profundidad cada uno de estos fundamentos.
+geometría en entornos virtuales. Copper se basa en el modelado mediante
+funciones de distancia con signo (SDF), el renderizado por \textit{ray
+    marching} y el uso del estándar gráfico WebGPU, usando Dawn para aplicarlo a
+C++. Este capítulo describe en profundidad cada uno de estos fundamentos.
 
 \section{Modelado tridimensional: Paradigmas y fundamentos}
 
@@ -15,18 +15,16 @@ conectadas para formar la superficie. Herramientas como \textit{Blender},
 \textit{Maya}, y \textit{3ds Max} utilizan este enfoque, que ofrece gran
 flexibilidad para la edición y animación, pero que implica la gestión explícita
 de la topología, el almacenamiento de grandes cantidades de datos y una
-complejidad elevada para operaciones como la combinación de objetos o la
-generación procedural de
-geometría.
+complejidad elevada para ciertas operaciones.
 
-Como alternativa, existen los métodos de representación implícita,
-especialmente los campos de distancia con signo (\textit{Signed Distance
-    Fields, SDF}). Una SDF es una función $f(\vec{x})$ que, para cada punto
-$\vec{x}$ del espacio, devuelve la distancia mínima a la superficie del objeto.
-El signo indica si el punto está en el interior (negativo), sobre la superficie
-(cero) o en el exterior (positivo). Este enfoque permite describir objetos
-mediante expresiones matemáticas, simplificando la combinación y manipulación
-de geometría compleja.
+Como alternativa, existen los métodos de representación implícita, como los
+campos de distancia con signo (\textit{Signed Distance Fields, SDF}). Una SDF
+es una función $f(\vec{x})$ que, para cada punto $\vec{x}$ del espacio,
+devuelve la distancia mínima a la superficie del objeto. El signo indica si el
+punto está en el interior (negativo), sobre la superficie (cero) o en el
+exterior (positivo). Este enfoque permite describir objetos mediante
+expresiones matemáticas, simplificando la combinación y manipulación de
+geometría compleja.
 
 \section{Funciones de distancia con signo (SDF)}
 
@@ -41,7 +39,7 @@ primitivas básicas como:
     \item \textbf{Cilindro, cono, plano...}: Cada primitiva se expresa como una función matemática que determina la distancia a su superficie.
 \end{itemize}
 
-Las SDF pueden combinarse empleando operadores booleanos y suaves:
+Y también pueden combinarse empleando operadores booleanos y suaves:
 
 \begin{itemize}
     \item \textbf{Unión}: $f_{union}(a, b) = \min(a, b)$
@@ -50,80 +48,35 @@ Las SDF pueden combinarse empleando operadores booleanos y suaves:
     \item \textbf{Unión suave}: Interpolación entre distancias y colores para crear transiciones continuas.
 \end{itemize}
 
-Las SDF son especialmente potentes en contextos de modelado procedural y
-generación fractal, permitiendo la composición jerárquica de formas y la
-aplicación de transformaciones a nivel funcional. El cálculo de normales se
-realiza mediante el gradiente de la función de distancia, habitualmente
-aproximado numéricamente:
-
-\begin{equation}
-    \vec{n}(\vec{x}) \approx \nabla f(\vec{x}) = \left(
-    f(\vec{x} + \epsilon \vec{i}) - f(\vec{x} - \epsilon \vec{i}),
-    f(\vec{x} + \epsilon \vec{j}) - f(\vec{x} - \epsilon \vec{j}),
-    f(\vec{x} + \epsilon \vec{k}) - f(\vec{x} - \epsilon \vec{k})
-    \right)
-\end{equation}
-
-donde $\epsilon$ es un valor pequeño usado para la derivación numérica.
-
-Las aplicaciones de las SDF abarcan desde el renderizado en tiempo real y la
-simulación física (detección de colisiones) hasta la generación de terrenos y
-la síntesis de geometría orgánica.
-
-\subsection{Ventajas de las SDF frente al modelado poligonal}
-
-\begin{itemize}
-    \item \textbf{Compacidad}: Las SDF se definen por fórmulas matemáticas en lugar de listas de vértices, lo que reduce el espacio necesario para describir objetos complejos.
-    \item \textbf{Facilidad de combinación}: La geometría puede combinarse empleando operadores matemáticos (unión, intersección, resta) de forma eficiente y expresiva.
-    \item \textbf{Transformaciones geométricas}: Las transformaciones como traslación, rotación y escalado se aplican directamente sobre la función, facilitando la manipulación.
-    \item \textbf{Cálculo de normales}: La normal en la superficie se obtiene como el gradiente de la función de distancia, lo que simplifica el cálculo de iluminación.
-    \item \textbf{Flexibilidad}: Permiten crear transiciones suaves entre objetos mediante operadores suavizados, lo que es difícil de lograr con mallas.
-\end{itemize}
-
-\subsection{Limitaciones y retos actuales}
-
-Más allá de las ventajas mencionadas, las SDF presentan retos abiertos en la
-investigación y la ingeniería gráfica:
-
-\begin{itemize}
-    \item \textbf{Representación de formas arbitrarias}: Si bien las primitivas básicas se definen fácilmente, la conversión de mallas arbitrarias a SDF es un problema activo de investigación.
-    \item \textbf{Eficiencia de evaluación}: El coste de evaluar funciones SDF complejas puede limitar su uso en escenas grandes o interactivas.
-    \item \textbf{Animación y deformación}: La edición y animación de SDF requiere métodos específicos, como la interpolación funcional o la composición de transformaciones.
-\end{itemize}
+Las SDF son especialmente potentes para casos de generación procedural,
+efectos visuales, física, simulaciones y renderizado implícito, permitiendo la
+composición jerárquica de formas y la aplicación de transformaciones a nivel
+funcional.
 
 \section{Ray Marching}
 
-El \textit{ray marching} es una técnica de renderizado que, utilizando la SDF,
-avanza iterativamente un rayo en el espacio hasta aproximar la intersección con
+El \textit{ray marching} es una técnica de renderizado que avanza iterativamente un rayo en el espacio hasta aproximar la intersección con
 una superficie implícita. El procedimiento puede describirse en los siguientes
 pasos:
 
 \begin{enumerate}
     \item Lanzar un rayo desde la cámara en una dirección determinada.
-    \item Evaluar la SDF en la posición actual para obtener la distancia mínima a la
-          superficie más cercana.
+    \item Evaluar la distancia para el siguiente punto a lo largo del rayo.
     \item Avanzar el punto a lo largo del rayo una distancia igual al valor obtenido.
     \item Repetir hasta que la distancia sea menor que un umbral (colisión con la
           superficie) o se alcance un límite de pasos o distancia máxima.
 \end{enumerate}
 
-Este método permite renderizar geometría definida implícitamente, como
-fractales, superficies orgánicas, y escenas generadas proceduralmente.
+Este método sumado a las SDF se llama sphere tracing, en este caso la distancia devuelta por la SDF se utiliza para avanzar el rayo de manera óptima.
 
-\subsection{Ray Marching vs Ray Tracing}
+\subsection{Ray Tracing}
 
-\textbf{Ray tracing} tradicional calcula la intersección exacta entre el rayo y primitivas geométricas (esferas, triángulos, planos) resolviendo ecuaciones analíticas. Es eficiente para mallas y escenas donde la geometría está definida explícitamente.
+A diferencia del ray marching, el ray tracing cálcula la primera intersección exacta entre el rayo y las primitivas geométricas de la escena. 
+Este método es especialmente eficiente para escenas donde la geometría está definida de forma explícita, como mallas poligonales.
+El procedimiento es similar al ray marching, se lanza un rayo desde la cámara, pero esta vez en vez de avanzar iterativamente,
+se calcula cual es el primer objeto con el que colisionaría el rayo.
 
-En contraste, \textbf{ray marching} utiliza la SDF para aproximar la distancia
-mínima a cualquier superficie, avanzando el rayo en pasos variables. Esto
-permite renderizar geometría mucho más compleja y flexible, pero a costa de
-necesitar muchas evaluaciones de la función y de aproximar, en vez de calcular
-de forma exacta, la intersección.
-
-\begin{itemize}
-    \item \textbf{Ray tracing}: Preciso y eficiente para mallas, permite efectos avanzados (reflexión, refracción).
-    \item \textbf{Ray marching}: Aproxima la superficie implícita, ideal para SDFs y fractales, más fácil de combinar con efectos procedurales y operaciones booleanas.
-\end{itemize}
+El ray tracing no se puede usar con SDF, ya que esta solo devuelve la distancia al objeto más cercano.
 
 \subsection{Sphere Tracing}
 
@@ -138,8 +91,7 @@ Sphere tracing es especialmente útil en escenas donde las funciones de
 distancia son suaves y bien definidas, permitiendo renderizar geometría
 compleja con costes computacionales bajos. Sin embargo, en superficies muy
 delgadas o SDFs poco continuas, el algoritmo puede avanzar muy poco en cada
-paso, reduciendo la eficiencia y generando artefactos
-visuales.
+paso, reduciendo la eficiencia y generando artefactos visuales.
 
 \begin{figure}[H]
     \centering
@@ -148,9 +100,19 @@ visuales.
     \label{fig:sphere-tracing}
 \end{figure}
 
-\subsection{Limitaciones y consideraciones}
+\subsection{Ventajas y limitaciones de las SDF}
 
-El ray marching y sphere tracing presentan los siguientes retos:
+Las SDF ofrecen varias ventajas sobre los métodos de modelado tradicionales:
+
+\begin{itemize}
+    \item \textbf{Compacidad}: Las SDF se definen por fórmulas matemáticas en lugar de listas de vértices, lo que reduce el espacio necesario para describir objetos complejos.
+    \item \textbf{Facilidad de combinación}: La geometría puede combinarse empleando operadores matemáticos (unión, intersección, resta) de forma eficiente y expresiva.
+    \item \textbf{Transformaciones geométricas}: Las transformaciones como traslación, rotación y escalado se aplican directamente sobre la función, facilitando la manipulación.
+    \item \textbf{Cálculo de normales}: La normal en la superficie se obtiene como el gradiente de la función de distancia, lo que simplifica el cálculo de iluminación.
+    \item \textbf{Flexibilidad}: Permiten crear transiciones suaves entre objetos mediante operadores suavizados, lo que es difícil de lograr con mallas.
+\end{itemize}
+
+Pero también presentan los siguientes retos:
 
 \begin{itemize}
     \item \textbf{Precision y aliasing}: El umbral de colisión y el número de pasos afectan la calidad de la imagen y pueden causar aliasing o superficies rugosas.
@@ -215,16 +177,36 @@ booleanos, cálculos de iluminación y efectos visuales de forma eficiente.
 WGSL permite aprovechar la arquitectura de la GPU para realizar renderizado en
 tiempo real, combinando eficiencia y expresividad.
 
+\subsection{Dawn: Implementación nativa de WebGPU}
+
+\textbf{Dawn} es una implementación nativa de la API WebGPU desarrollada por Google y la comunidad Chromium\cite{dawn}. Dawn permite ejecutar aplicaciones que usan WebGPU fuera del navegador, proporcionando acceso directo y multiplataforma a la GPU. Es el backend utilizado por Copper para interactuar con WebGPU desde C++.
+
+En Copper, Dawn se integra como una dependencia externa, permitiendo:
+
+\begin{itemize}
+    \item \textbf{Creación de instancias de WebGPU}: A través de las clases y funciones de Dawn, Copper inicializa \texttt{wgpu::Instance}, \texttt{wgpu::Device}, y otros objetos fundamentales.
+    \item \textbf{Gestión de recursos}: Dawn facilita la creación y gestión de buffers, texturas y pipelines, siguiendo la especificación de WebGPU.
+    \item \textbf{Compatibilidad multiplataforma}: Gracias a Dawn, Copper puede ejecutarse en Windows, Linux y macOS, explotando la GPU de cada sistema.
+    \item \textbf{Integración con GLFW}: Mediante el módulo \texttt{webgpu-glfw}, Copper conecta la gestión de ventanas de GLFW con las superficies de renderizado de Dawn/WebGPU.
+\end{itemize}
+
+El ciclo de inicialización y renderizado en Copper se basa en la creación de la
+instancia de Dawn (\texttt{CreateInstance}), la selección de adaptador y
+dispositivo (\texttt{GetAdapter}, \texttt{GetDevice}), y la configuración de la
+superficie de dibujo (\texttt{ConfigureSurface}). Los comandos de renderizado
+se envían a la GPU mediante \texttt{CommandEncoder} y
+\texttt{RenderPassEncoder}, siguiendo el modelo de WebGPU.
+
 \section{Herramientas auxiliares}
 
 El desarrollo de aplicaciones gráficas requiere gestionar ventanas, entrada de
 usuario y la interfaz gráfica. Copper utiliza las siguientes herramientas:
 
 \begin{itemize}
-    \item \textbf{GLFW}: Biblioteca multiplataforma para la gestión de ventanas y eventos~\cite{glfw-docs}.
-    \item \textbf{ImGui}: Sistema de interfaz gráfica inmediata para la manipulación interactiva de primitivas y parámetros de escena~\cite{imgui-docs}.
-    \item \textbf{GLM}: Biblioteca matemática para operaciones con vectores y matrices~\cite{glm-docs}.
-    \item \textbf{CMake}: Herramienta de compilación y gestión de dependencias~\cite{cmake-docs}.
+    \item \textbf{GLFW}: Biblioteca multiplataforma para la gestión de ventanas y eventos\cite{glfw-docs}.
+    \item \textbf{ImGui}: Sistema de interfaz gráfica inmediata para la manipulación interactiva de primitivas y parámetros de escena\cite{imgui}.
+    \item \textbf{GLM}: Biblioteca matemática para operaciones con vectores y matrices\cite{glm}.
+    \item \textbf{CMake}: Herramienta de compilación y gestión de dependencias\cite{cmake-docs}.
 \end{itemize}
 
 Estas herramientas proporcionan la infraestructura básica para la interacción y
