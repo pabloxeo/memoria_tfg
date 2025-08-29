@@ -112,7 +112,7 @@ Las SDF ofrecen varias ventajas sobre los métodos de modelado tradicionales:
     \item \textbf{Flexibilidad}: Permiten crear transiciones suaves entre objetos mediante operadores suavizados, lo que es difícil de lograr con mallas.
 \end{itemize}
 
-Pero también presentan los siguientes retos:
+Pero también presentan diferentes limitaciones a la hora de representar geometría:
 
 \begin{itemize}
     \item \textbf{Precision y aliasing}: El umbral de colisión y el número de pasos afectan la calidad de la imagen y pueden causar aliasing o superficies rugosas.
@@ -125,13 +125,13 @@ Pero también presentan los siguientes retos:
 
 WebGPU es un estándar gráfico de nueva generación que proporciona acceso
 eficiente y multiplataforma a la GPU, tanto en navegadores como en aplicaciones
-nativas. WebGPU surge como respuesta a las limitaciones de APIs tradicionales
+nativas. Surge como respuesta a las limitaciones de APIs tradicionales
 como OpenGL y DirectX, ofreciendo mayor control sobre el hardware, mejor
 rendimiento y portabilidad.
 
 \subsection{Motivación y principios de diseño}
 
-WebGPU fue diseñado para proporcionar:
+WebGPU fue diseñado para proporcionar los siguientes atributos a los desarrolladores:
 
 \begin{itemize}
     \item \textbf{Multiplataforma}: Disponible en Windows, Linux, macOS y en navegadores modernos (Chrome, Firefox, Safari).
@@ -146,10 +146,8 @@ una mayor comprensión del modelo de GPU.
 
 \subsection{Conceptos clave de WebGPU}
 
-De acuerdo con la guía, los fundamentos de WebGPU incluyen:
-
 \begin{itemize}
-    \item \textbf{Buffers}: Áreas de memoria para almacenar datos como vértices, índices y uniformes.
+    \item \textbf{Buffers}: Áreas de memoria para almacenar datos como vértices, índices y uniforms.
     \item \textbf{Textures}: Imágenes y mapas de datos que pueden ser leídos y escritos por la GPU.
     \item \textbf{Bind Groups}: Conjuntos de recursos que se vinculan a los shaders, permitiendo el acceso eficiente a datos en la GPU.
     \item \textbf{Pipelines}: Describen la secuencia de operaciones gráficas, incluyendo shaders, estados de rasterización y configuración de recursos.
@@ -186,7 +184,6 @@ En Copper, Dawn se integra como una dependencia externa, permitiendo:
 \begin{itemize}
     \item \textbf{Creación de instancias de WebGPU}: A través de las clases y funciones de Dawn, Copper inicializa \texttt{wgpu::Instance}, \texttt{wgpu::Device}, y otros objetos fundamentales.
     \item \textbf{Gestión de recursos}: Dawn facilita la creación y gestión de buffers, texturas y pipelines, siguiendo la especificación de WebGPU.
-    \item \textbf{Compatibilidad multiplataforma}: Gracias a Dawn, Copper puede ejecutarse en Windows, Linux y macOS, explotando la GPU de cada sistema.
     \item \textbf{Integración con GLFW}: Mediante el módulo \texttt{webgpu-glfw}, Copper conecta la gestión de ventanas de GLFW con las superficies de renderizado de Dawn/WebGPU.
 \end{itemize}
 
@@ -203,7 +200,7 @@ El desarrollo de aplicaciones gráficas requiere gestionar ventanas, entrada de
 usuario y la interfaz gráfica. Copper utiliza las siguientes herramientas:
 
 \begin{itemize}
-    \item \textbf{GLFW}: Biblioteca multiplataforma para la gestión de ventanas y eventos\cite{glfw-docs}.
+    \item \textbf{GLFW}: Biblioteca multiplataforma para la gestión de ventanas y eventos, usada a partir de su módulo de Dawn\cite{glfw-docs}.
     \item \textbf{ImGui}: Sistema de interfaz gráfica inmediata para la manipulación interactiva de primitivas y parámetros de escena\cite{imgui}.
     \item \textbf{GLM}: Biblioteca matemática para operaciones con vectores y matrices\cite{glm}.
     \item \textbf{CMake}: Herramienta de compilación y gestión de dependencias\cite{cmake-docs}.

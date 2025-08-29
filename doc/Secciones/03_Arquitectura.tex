@@ -1,15 +1,14 @@
-\chapter{Arquitectura del sistema}
+\chapter{Arquitectura del sistema y compilación}
 
-La arquitectura de \textbf{Copper} ha sido concebida siguiendo principios de
-modularidad, mantenibilidad y claridad estructural. A continuación se detallan
-los diferentes módulos que componen el sistema, describiendo su funcionalidad y
-las interacciones que mantienen entre sí, con referencias directas al código
-fuente.
+La arquitectura de \textbf{Copper} sigue principios de modularidad,
+mantenibilidad y claridad estructural. A continuación se detallan los
+diferentes módulos que componen el sistema, describiendo su funcionalidad y las
+interacciones que mantienen entre sí.
 
 \section{Módulo Core}
 
 El módulo \textbf{Core} (\texttt{src/core/Core.cpp}, \texttt{src/core/Core.h})
-es el responsable de orquestar el ciclo de vida de la aplicación. Sus funciones
+es el responsable de gestionar el ciclo de vida de la aplicación. Sus funciones
 principales incluyen:
 \begin{itemize}
     \item \textbf{Inicialización}: Llama a los métodos de inicialización de los módulos \texttt{Window} y \texttt{Renderer} para preparar el entorno gráfico y la ventana principal.
@@ -41,8 +40,7 @@ responsabilidades son:
     \item \textbf{Coordinación de módulos}: Instancia y gestiona los módulos \texttt{Camera}, \texttt{CameraController}, \texttt{GizmoControls}, \texttt{Coder} e \texttt{Interfaz (GUI)}, asegurando la comunicación entre ellos.
     \item \textbf{Gestión de interacción}: Recoge eventos de usuario (ratón, teclado) y los distribuye entre los controles de cámara, gizmo y selección de objetos.
 \end{itemize}
-Además, el renderer es responsable de decidir cuándo se debe actualizar el
-pipeline gráfico, por ejemplo, al modificar objetos SDF o parámetros visuales.
+Además, el renderer es responsable de actualizar el pipeline gráfico, por ejemplo, al modificar objetos SDF o parámetros visuales.
 
 \section{Subsistema de Cámara}
 
@@ -62,7 +60,7 @@ shader para el renderizado de objetos SDF. Sus funciones incluyen:
     \item \textbf{Gestión de objetos}: Permite añadir, modificar y eliminar objetos SDF (esferas, cajas, conos, cilindros) y operaciones entre ellos (unión, intersección, sustracción).
     \item \textbf{Generación de shaders}: Construye el código shader que será utilizado en WebGPU para renderizar la escena y para operaciones de picking.
     \item \textbf{Selección y edición}: Gestiona el objeto actualmente seleccionado y expone métodos para editar sus propiedades y operación.
-    \item \textbf{Serialización}: Permite guardar y cargar escenas desde fichero, facilitando la persistencia y el intercambio de datos.
+    \item \textbf{Almacenamiento de escenas}: Permite guardar y cargar escenas desde fichero, facilitando la persistencia y el intercambio de datos.
 \end{itemize}
 
 \section{Módulo GizmoControls}
@@ -97,7 +95,7 @@ manera:
     \item \texttt{Core} inicializa \texttt{Window} y \texttt{Renderer}.
     \item \texttt{Renderer} instancia y coordina \texttt{Camera}, \texttt{CameraController}, \texttt{GizmoControls} y \texttt{Coder}.
     \item \texttt{CameraController} y \texttt{GizmoControls} gestionan la interacción directa del usuario.
-    \item \texttt{Interfaz} permite la edición visual y comunica los cambios a \texttt{Coder} y \texttt{Renderer}.
+    \item \texttt{Interfaz} permite la edición mediante ImGui y comunica los cambios a \texttt{Coder} y \texttt{Renderer}.
     \item \texttt{Coder} actualiza el shader y los objetos SDF, transmitiendo la información al renderer para el ciclo de renderizado.
 \end{itemize}
 
@@ -165,6 +163,112 @@ siguientes criterios:
 \begin{itemize}
     \item \textbf{Separación de responsabilidades}: El diseño modular permite que cada componente (núcleo, renderizado, cámara, gestión de objetos, manipulación, interfaz) se encargue de una función específica, lo que facilita la comprensión, el mantenimiento y la evolución del sistema. Por ejemplo, \texttt{Core} sólo gestiona el ciclo de vida y delega el renderizado a \texttt{Renderer}, mientras que la creación y edición de objetos SDF queda aislada en \texttt{Coder}.
     \item \textbf{Facilidad de extensión}: La existencia de clases independientes para cada tipo de objeto (\texttt{sphere}, \texttt{box}, \texttt{cone}, \texttt{cylinder}) y para operaciones (\texttt{union}, \texttt{subtract}, \texttt{intersection}, etc.) en \texttt{Coder} permite añadir nuevos tipos u operaciones sin modificar el núcleo del sistema, como se observa en los métodos \texttt{addSphere}, \texttt{addBox}, etc. [\texttt{src/core/Coder.cpp}, \texttt{src/core/Coder.h}].
-    \item \textbf{Interactividad y desacoplamiento}: Los subsistemas de cámara y control de objetos (Camera/CameraController, GizmoControls) están desacoplados de la lógica de renderizado, permitiendo que la interacción del usuario se procese de forma independiente y se integre fácilmente con la interfaz gráfica (\texttt{Interfaz.cpp}). Esto se observa en la gestión de eventos de ratón y teclado, donde cada módulo recibe únicamente los datos que necesita y actualiza su estado local.
-    \item \textbf{Actualización eficiente del renderizado}: El sistema de notificación de cambios (\texttt{pipelineDirty} en \texttt{Renderer}, activado por modificaciones en \texttt{Coder} o en la escena) permite que el pipeline gráfico se actualice sólo cuando es necesario, optimizando el rendimiento y evitando cálculos redundantes [\texttt{src/core/Renderer.cpp}].
+    \item \textbf{Interactividad y desacoplamiento}: Los subsistemas de cámara y control de objetos (Camera/CameraController, GizmoControls) están desacoplados de la lógica de renderizado, permitiendo que la interacción del usuario se procese de forma independiente y se integre fácilmente con la interfaz gráfica (\texttt{Interfaz.cpp}).
+    \item \textbf{Actualización eficiente del renderizado}: El sistema de notificación de cambios (\texttt{pipelineDirty} en \texttt{Renderer}, activado por modificaciones en \texttt{Coder} o en la escena) permite que el pipeline gráfico se actualice sólo cuando es necesario, optimizando el rendimiento y evitando cálculos redundantes (\texttt{src/core/Renderer.cpp}).
 \end{itemize}
+
+\section{Sistema de construcción y compilación del proyecto: CMake}
+
+El proyecto utiliza \textbf{CMake} como sistema de construcción para gestionar
+la compilación, las dependencias y la organización de los archivos fuente.
+CMake es una herramienta ampliamente empleada en proyectos de desarrollo de
+software en C y C++ por su capacidad para generar archivos de construcción para
+distintos sistemas y entornos \cite{cmake-docs}.
+
+\subsection{Estructura del archivo CMake}
+
+En la raíz del proyecto se encuentra el archivo \texttt{CMakeLists.txt}, que
+define la configuración de la construcción. Sus principales componentes y
+funcionalidades son:
+
+\begin{itemize}
+    \item \textbf{Definición del proyecto:}\\
+          El proyecto se denomina \texttt{Copper}, está configurado para compilar en C++20 y se identifica como una aplicación de modelado 3D basada en SDF:
+          \begin{lstlisting}[language=CMake, caption={Definición del proyecto en CMakeLists.txt}]
+            project(Copper VERSION 0.0.2 LANGUAGES CXX C DESCRIPTION "3D SDF-based modeling application")
+            set(CMAKE_CXX_STANDARD 20)
+            set(CMAKE_CXX_STANDARD_REQUIRED ON)
+            set(CMAKE_CXX_EXTENSIONS OFF)
+        \end{lstlisting}
+
+    \item \textbf{Gestión de dependencias externas:}\\
+          El archivo especifica la inclusión y compilación de bibliotecas externas necesarias para el funcionamiento del proyecto, como Dawn (WebGPU), GLM (matemáticas), ImGuiFileDialog (diálogos de archivos en la interfaz gráfica), y las fuentes de ImGui. La gestión de dependencias se realiza mediante \texttt{add\_subdirectory} y \texttt{FetchContent}, permitiendo su descarga y compilación automática junto al proyecto principal.
+
+    \item \textbf{Organización de los archivos fuente:}\\
+        Se recopilan y organizan los archivos fuente del proyecto, excluyendo explícitamente el fichero \texttt{main.cpp} para evitar duplicidad, y se añaden los archivos fuente de ImGui.
+        \begin{lstlisting}[language=CMake, caption={Organización de los archivos fuente en CMakeLists.txt}]
+            file(GLOB_RECURSE COPPER_SOURCES src/*.cpp src/*.h)
+            list(REMOVE_ITEM COPPER_SOURCES ${CMAKE_SOURCE_DIR}/src/main.cpp)
+        \end{lstlisting}
+
+    \item \textbf{Creación del ejecutable:}\\
+          Se define el ejecutable principal \texttt{copper}, que se compila a partir de \texttt{main.cpp}, los archivos fuente propios y los de ImGui.
+          \begin{lstlisting}[language=CMake, caption={Creación del ejecutable en CMakeLists.txt}]
+    add_executable(copper src/main.cpp ${COPPER_SOURCES} ${IMGUI_SOURCES})
+    \end{lstlisting}
+
+    \item \textbf{Definición de directorios de inclusión:}\\
+          Se especifican los directorios que contienen los archivos de cabecera para facilitar la compilación.
+          \begin{lstlisting}[language=CMake, caption={Definición de directorios de inclusión en CMakeLists.txt}]
+    target_include_directories(copper PRIVATE src lib/imgui lib/imgui/misc/cpp lib/imgui/backends ${CMAKE_CURRENT_BINARY_DIR}/src)
+    \end{lstlisting}
+
+    \item \textbf{Vinculación de bibliotecas:}\\
+          Se vinculan las bibliotecas necesarias para el funcionamiento del programa, como Dawn/WebGPU, GLM, GLFW y el soporte para WebGPU en GLFW.
+          \begin{lstlisting}[language=CMake, caption={Vinculación de bibliotecas en CMakeLists.txt}]
+    target_link_libraries(copper PRIVATE dawn::webgpu_dawn glm::glm glfw webgpu_glfw ImGuiFileDialog)
+    \end{lstlisting}
+
+    \item \textbf{Definiciones de compilador:}\\
+          Se incluyen definiciones específicas que permiten, por ejemplo, indicar el directorio de recursos y activar la integración de ImGui con WebGPU usando Dawn.
+          \begin{lstlisting}[language=CMake, caption={Definiciones de compilador en CMakeLists.txt}]
+    target_compile_definitions(copper PRIVATE RESOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/src" IMGUI_IMPL_WEBGPU_BACKEND_DAWN)
+    \end{lstlisting}
+\end{itemize}
+
+\subsection{Proceso de compilación}
+
+Para compilar el proyecto, se debe disponer de CMake y un compilador compatible
+con C++20. El proceso estándar consiste en:
+
+\begin{enumerate}
+    \item Crear un directorio de construcción:
+          \begin{lstlisting}
+    mkdir build
+    cd build
+    \end{lstlisting}
+
+    \item Invocar CMake para generar los archivos de construcción apropiados para el
+          sistema (por ejemplo, Makefiles en Linux, proyectos Visual Studio en Windows):
+          \begin{lstlisting}
+    cmake ..
+    \end{lstlisting}
+
+    \item Compilar el ejecutable:
+          \begin{lstlisting}
+    make
+    \end{lstlisting}
+          En otros sistemas, seguir el proceso estándar generado por CMake (por ejemplo,
+          abrir el proyecto en Visual Studio y compilar).
+\end{enumerate}
+
+Esto construirá el ejecutable \texttt{copper}, incluyendo todas las
+dependencias y archivos fuente indicados en \texttt{CMakeLists.txt}.
+
+\subsection{Función del sistema de construcción}
+
+El sistema CMake facilita:
+
+\begin{itemize}
+    \item La gestión automática de dependencias externas.
+    \item La configuración multiplataforma.
+    \item La compilación eficiente de todos los módulos del programa, asegurando que las
+          dependencias y rutas de inclusión están correctamente resueltas.
+    \item La integración de recursos y librerías de terceros necesarios para la ejecución
+          (por ejemplo, ImGui para la interfaz gráfica, Dawn para el acceso a WebGPU).
+\end{itemize}
+
+La configuración descrita en el archivo \texttt{CMakeLists.txt} permite
+reproducir el proceso de compilación en distintos sistemas operativos,
+siguiendo las mejores prácticas de ingeniería de software y facilitando el
+trabajo colaborativo y la portabilidad del proyecto.
