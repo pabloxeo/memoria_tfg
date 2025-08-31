@@ -189,67 +189,61 @@ funcionalidades son:
             set(CMAKE_CXX_STANDARD 20)
             set(CMAKE_CXX_STANDARD_REQUIRED ON)
             set(CMAKE_CXX_EXTENSIONS OFF)
-        \end{lstlisting}
+\end{lstlisting}
 
     \item \textbf{Gestión de dependencias externas:}\\
-          El archivo especifica la inclusión y compilación de bibliotecas externas necesarias para el funcionamiento del proyecto, como Dawn (WebGPU), GLM (matemáticas), ImGuiFileDialog (diálogos de archivos en la interfaz gráfica), y las fuentes de ImGui. La gestión de dependencias se realiza mediante \texttt{add\_subdirectory} y \texttt{FetchContent}, permitiendo su descarga y compilación automática junto al proyecto principal.
+          El archivo especifica la inclusión y compilación de bibliotecas externas necesarias para el funcionamiento del proyecto, como Dawn (WebGPU), GLM (matemáticas), ImGuiFileDialog (diálogos de archivos en la interfaz gráfica), y las fuentes de ImGui. La gestión de dependencias se realiza mediante \texttt{add\_subdirectory} y \texttt{FetchContent}, permitiendo su descarga y compilación automática junto al proyecto principal. 
+          Es importante el uso de \texttt{DAWN\_FETCH\_DEPENDENCIES} para no tener que instalar todas las librerías que usa Dawn ya que estos son pesados y pueden no ser necesarios, y así evitamos gestionar manualmente las dependencias.
 
     \item \textbf{Organización de los archivos fuente:}\\
-        Se recopilan y organizan los archivos fuente del proyecto, excluyendo explícitamente el fichero \texttt{main.cpp} para evitar duplicidad, y se añaden los archivos fuente de ImGui.
-        \begin{lstlisting}[language=CMake, caption={Organización de los archivos fuente en CMakeLists.txt}]
+          Se recopilan y organizan los archivos fuente del proyecto, excluyendo explícitamente el fichero \texttt{main.cpp} para evitar duplicidad, y se añaden los archivos fuente de ImGui.
+          \begin{lstlisting}[language=CMake, caption={Organización de los archivos fuente en CMakeLists.txt}]
             file(GLOB_RECURSE COPPER_SOURCES src/*.cpp src/*.h)
-            list(REMOVE_ITEM COPPER_SOURCES ${CMAKE_SOURCE_DIR}/src/main.cpp)
-        \end{lstlisting}
+            list(REMOVE_ITEM COPPER_SOURCES ${CMAKE_SOURCE_DIR}/src/main.cpp)\end{lstlisting}
 
     \item \textbf{Creación del ejecutable:}\\
           Se define el ejecutable principal \texttt{copper}, que se compila a partir de \texttt{main.cpp}, los archivos fuente propios y los de ImGui.
           \begin{lstlisting}[language=CMake, caption={Creación del ejecutable en CMakeLists.txt}]
-    add_executable(copper src/main.cpp ${COPPER_SOURCES} ${IMGUI_SOURCES})
-    \end{lstlisting}
+    add_executable(copper src/main.cpp ${COPPER_SOURCES} ${IMGUI_SOURCES})\end{lstlisting}
 
     \item \textbf{Definición de directorios de inclusión:}\\
           Se especifican los directorios que contienen los archivos de cabecera para facilitar la compilación.
           \begin{lstlisting}[language=CMake, caption={Definición de directorios de inclusión en CMakeLists.txt}]
-    target_include_directories(copper PRIVATE src lib/imgui lib/imgui/misc/cpp lib/imgui/backends ${CMAKE_CURRENT_BINARY_DIR}/src)
-    \end{lstlisting}
+    target_include_directories(copper PRIVATE src lib/imgui lib/imgui/misc/cpp lib/imgui/backends ${CMAKE_CURRENT_BINARY_DIR}/src)\end{lstlisting}
 
     \item \textbf{Vinculación de bibliotecas:}\\
           Se vinculan las bibliotecas necesarias para el funcionamiento del programa, como Dawn/WebGPU, GLM, GLFW y el soporte para WebGPU en GLFW.
           \begin{lstlisting}[language=CMake, caption={Vinculación de bibliotecas en CMakeLists.txt}]
-    target_link_libraries(copper PRIVATE dawn::webgpu_dawn glm::glm glfw webgpu_glfw ImGuiFileDialog)
-    \end{lstlisting}
+    target_link_libraries(copper PRIVATE dawn::webgpu_dawn glm::glm glfw webgpu_glfw ImGuiFileDialog)\end{lstlisting}
 
     \item \textbf{Definiciones de compilador:}\\
           Se incluyen definiciones específicas que permiten, por ejemplo, indicar el directorio de recursos y activar la integración de ImGui con WebGPU usando Dawn.
           \begin{lstlisting}[language=CMake, caption={Definiciones de compilador en CMakeLists.txt}]
-    target_compile_definitions(copper PRIVATE RESOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/src" IMGUI_IMPL_WEBGPU_BACKEND_DAWN)
-    \end{lstlisting}
+                target_compile_definitions(copper PRIVATE RESOURCE_DIR="${CMAKE_CURRENT_SOURCE_DIR}/src" IMGUI_IMPL_WEBGPU_BACKEND_DAWN)
+\end{lstlisting}
 \end{itemize}
 
 \subsection{Proceso de compilación}
 
 Para compilar el proyecto, se debe disponer de CMake y un compilador compatible
-con C++20. El proceso estándar consiste en:
+con C++20. El proceso estándar usando git para compilar el proyecto consiste en:
 
 \begin{enumerate}
-    \item Crear un directorio de construcción:
-          \begin{lstlisting}
-    mkdir build
-    cd build
-    \end{lstlisting}
-
-    \item Invocar CMake para generar los archivos de construcción apropiados para el
-          sistema (por ejemplo, Makefiles en Linux, proyectos Visual Studio en Windows):
-          \begin{lstlisting}
-    cmake ..
-    \end{lstlisting}
-
-    \item Compilar el ejecutable:
-          \begin{lstlisting}
-    make
-    \end{lstlisting}
-          En otros sistemas, seguir el proceso estándar generado por CMake (por ejemplo,
-          abrir el proyecto en Visual Studio y compilar).
+    \item Si fuese necesario añadir los paquetes utilizados por Dawn:
+          \begin{lstlisting}[language=bash]
+        sudo apt-get install libxrandr-dev libxinerama-dev libxcursor-dev mesa-common-dev libx11-xcb-dev pkg-config nodejs npm\end{lstlisting}
+    \item Clonar el repositorio de Git y actualizar los submódulos:
+          \begin{lstlisting}[language=bash]
+        git clone https://github.com/tu-usuario/copper.git
+        cd copper
+        git submodule update --init\end{lstlisting}
+    \item Compilar en la carpeta build:
+    \begin{lstlisting}[language=bash]
+        cmake -B build
+        cmake --build build -j$(nproc)\end{lstlisting}
+    \item Por último si se quiere ejecutar el proyecto:
+    \begin{lstlisting}[language=bash]
+        ./build/copper\end{lstlisting}
 \end{enumerate}
 
 Esto construirá el ejecutable \texttt{copper}, incluyendo todas las
@@ -269,6 +263,5 @@ El sistema CMake facilita:
 \end{itemize}
 
 La configuración descrita en el archivo \texttt{CMakeLists.txt} permite
-reproducir el proceso de compilación en distintos sistemas operativos,
-siguiendo las mejores prácticas de ingeniería de software y facilitando el
+reproducir el proceso de compilación en distintos sistemas, facilitando el
 trabajo colaborativo y la portabilidad del proyecto.

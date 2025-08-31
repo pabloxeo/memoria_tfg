@@ -56,7 +56,7 @@ proceso es el siguiente:
 El siguiente fragmento ilustra parte del código shader que se puede generar
 dinámicamente:
 
-\begin{lstlisting}[language=WGSL, caption={Fragmento de código WGSL generado}]
+\begin{lstlisting}[language=C++, caption={Fragmento de código WGSL generado}]
 fn sdf(pos: vec3<f32>) -> DistanceColor {
     var result = DistanceColor(1e6, vec3<f32>(0.0, 0.0, 0.0), -1);
     var sphere0: DistanceColor = sdf_sphere(pos, uniforms.position, uniforms.size[0], uniforms.color, 0);
@@ -90,7 +90,7 @@ Cada tipo de objeto tiene su propia función SDF:
 
 Las combinaciones entre objetos se realizan con operadores booleanos suaves:
 
-\begin{lstlisting}[language=WGSL]
+\begin{lstlisting}[language=C++, caption={Operadores booleanos suaves}]
 fn opSmoothUnion(d1: DistanceColor, d2: DistanceColor, k: f32) -> DistanceColor { ... }
 fn opSmoothIntersect(d1: DistanceColor, d2: DistanceColor, k: f32) -> DistanceColor { ... }
 fn opSmoothSubtract(d1: DistanceColor, d2: DistanceColor, k: f32) -> DistanceColor { ... }
@@ -107,3 +107,83 @@ superficie más cercana en cada píxel. Para cada paso:
           aplicando iluminación tipo Blinn-Phong.
     \item Se calcula el sombreado y las normales mediante diferencias finitas.
 \end{itemize}
+
+\section{Picking en el shader}
+
+La técnica de \textbf{picking} en Copper permite identificar el objeto SDF
+seleccionado por el usuario, usando un shader especializado que recorre la
+escena y devuelve el identificador (\texttt{id}) del objeto más próximo al rayo
+lanzado desde el cursor.
+
+El proceso es el siguiente:
+
+\begin{enumerate}
+    \item Al pulsar el botón izquierdo del ratón, se genera una pipeline de picking y se
+          ejecuta el shader picking.
+    \item En el shader, se calcula el rayo a partir de la posición del cursor,
+          transformada a coordenadas normalizadas y ajustada por la matriz de vista de
+          cámara.
+    \item Se realiza ray marching sobre la escena, evaluando la función SDF y almacenando
+          el \texttt{id} del objeto más cercano.
+    \item El resultado se escribe en un buffer (generalmente una textura de un solo canal
+          entero), que se lee desde la CPU para determinar el objeto seleccionado.
+\end{enumerate}
+
+El núcleo del shader de picking, generado dinámicamente por la clase
+\texttt{Coder}, se parece a este fragmento:
+
+\begin{lstlisting}[language=C++, caption={Picking shader fragment}]
+@fragment
+fn fragmentPickingMain(in: VertexOutput) -> @location(0) i32{
+    let cam = transpose(uniforms.mvp_matrix);
+    let right = cam[0].xyz;
+    let up = cam[1].xyz;
+    let forward = cam[2].xyz;
+    let eye = cam[0].w * right + cam[1].w * up + cam[2].w * forward;
+    let m = uniforms.mouse_position * 2.0 - vec2<f32>(1.0, 1.0);
+    let mouse_uv = vec2<f32>(m.x, -m.y / uniforms.aspect_ratio);
+    let rd = normalize(mouse_uv.x * right + mouse_uv.y * up + FOV * forward);
+    let ro = eye;
+    let dc = ray_march_picking(ro, rd);
+    return dc.id;
+}
+\end{lstlisting}
+
+La función \texttt{ray\_march\_picking} recorre la escena utilizando la función
+SDF de picking, que para cada objeto evalúa la distancia y el identificador:
+
+\begin{lstlisting}[language=C++, caption={Ray marching picking loop}]
+fn ray_march_picking(ro: vec3<f32>, rd: vec3<f32>) -> DistanceColor {
+    var total_distance: f32 = 0.0;
+    for (var i: i32 = 0; i < MAX_MARCHING_STEPS && total_distance < MAX_DISTANCE; i++) {
+        let pos = ro + rd * total_distance;
+        let dc = sdf_picking(pos);
+        if (dc.distance < MIN_DISTANCE) {
+            return dc;
+        }
+        total_distance += dc.distance;
+    }
+    return DistanceColor(1e6, vec3<f32>(0.0), -1);
+}
+\end{lstlisting}
+
+La función \texttt{sdf\_picking} está generada dinámicamente y recorre todos
+los objetos, devolviendo el identificador del más cercano:
+
+\begin{lstlisting}[language=C++, caption={SDF picking para todos los objetos}]
+fn sdf_picking(pos: vec3<f32>) -> DistanceColor {
+    var result = DistanceColor(1e6, vec3<f32>(0.0, 0.0, 0.0), -1);
+    // Para cada objeto:
+    // var sphere0: DistanceColor = sdf_sphere(...);
+    // ...
+    if (sphere0.distance < result.distance) {
+        result = sphere0;
+    }
+    // ...
+    return result;
+}
+\end{lstlisting}
+
+El pipeline de picking escribe el \texttt{id} del objeto seleccionado en la
+textura de picking, que luego es leída por la CPU para actualizar el estado de
+selección en el sistema.

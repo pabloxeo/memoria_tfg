@@ -97,29 +97,31 @@ Telecomunicación\xspace}
 \definecolor{gray45}{gray}{.45}
 \definecolor{gray30}{gray}{.94}
 
-\lstset{ frame=Ltb,
-     framerule=0.5pt,
-     aboveskip=0.5cm,
-     framextopmargin=3pt,
-     framexbottommargin=3pt,
-     framexleftmargin=0.1cm,
-     framesep=0pt,
-     rulesep=.4pt,
-     backgroundcolor=\color{gray97},
-     rulesepcolor=\color{black},
-     %
-     stringstyle=\ttfamily,
-     showstringspaces = false,
-     basicstyle=\scriptsize\ttfamily,
-     commentstyle=\color{gray45},
-     keywordstyle=\bfseries,
-     %
-     numbers=left,
-     numbersep=6pt,
-     numberstyle=\tiny,
-     numberfirstline = false,
-     breaklines=true,
-   }
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\usepackage{xcolor}
+
+\lstset{
+   backgroundcolor=\color{backcolour},   
+   commentstyle=\color{codegreen},
+   keywordstyle=\color{magenta},
+   numberstyle=\tiny\color{codegray},
+   stringstyle=\color{codepurple},
+   basicstyle=\ttfamily\footnotesize,
+   breakatwhitespace=false,         
+   breaklines=true,                 
+   captionpos=b,                    
+   keepspaces=true,                 
+   numbers=left,                    
+   numbersep=5pt,                  
+   showspaces=false,                
+   showstringspaces=false,
+   showtabs=false,                  
+   tabsize=2
+}
  
 % minimizar fragmentado de listados
 \lstnewenvironment{listing}[1][]
@@ -183,15 +185,15 @@ Telecomunicación\xspace}
 %\mainmatter
 %\setlength{\parskip}{5pt}
 
-\input{Secciones/01_Introduccion}
-\input{Secciones/02_Fundamentos_teoricos}
-\input{Secciones/03_Arquitectura}
-\input{Secciones/04_Implementacion_ventana}
-\input{Secciones/05_Implementacion_controles}
-\input{Secciones/06_Implementacion_shader}
-\input{Secciones/07_Funcionalidades_adicionales}
-\input{Secciones/08_Pruebas}
-%\input{Secciones/09_Conclusiones}
+\input{Secciones/Introduccion}
+\input{Secciones/Fundamentos_teoricos}
+\input{Secciones/Arquitectura}
+\input{Secciones/Implementacion_ventana}
+\input{Secciones/Implementacion_camara}
+\input{Secciones/Implementacion_shader}
+\input{Secciones/Implementacion_controles}
+\input{Secciones/Funcionalidades_adicionales}
+\input{Secciones/Conclusiones}
 
 %
 \nocite{*}
