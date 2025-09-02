@@ -2,10 +2,10 @@
 
 \section{Introducción}
 
-En este capítulo se describe la implementación de los shaders en el sistema
-Copper, explicando cómo se genera el código shader, su funcionamiento, y el
-proceso mediante el cual se parametriza y escribe el código según la escena y
-los objetos definidos por el usuario.
+En este capítulo se describe la implementación de los shaders, explicando cómo
+se genera el código, su funcionamiento, y el proceso mediante el cual se
+parametriza y escribe el código según la escena y los objetos definidos por el
+usuario.
 
 \section{Arquitectura General}
 
@@ -41,8 +41,7 @@ proceso es el siguiente:
 \begin{itemize}
     \item Para cada objeto, se genera una función SDF específica que calcula la distancia
           y el color.
-    \item Se combinan las SDFs utilizando las operaciones booleanas indicadas (por
-          ejemplo, unión suave, intersección, sustracción).
+    \item Se combinan las SDFs utilizando las operaciones booleanas indicadas.
     \item Se añade lógica para picking, de modo que cada objeto pueda ser seleccionado
           mediante raycasting.
     \item Si hay objetos auxiliares como gizmos, se añaden funciones SDF para estos
@@ -50,8 +49,6 @@ proceso es el siguiente:
     \item El código generado se concatena junto con una base estándar que define la
           estructura de los shaders, funciones de iluminación, ray marching, etc.
 \end{itemize}
-
-\section{Ejemplo de Código Generado}
 
 El siguiente fragmento ilustra parte del código shader que se puede generar
 dinámicamente:
@@ -71,7 +68,7 @@ fn sdf(pos: vec3<f32>) -> DistanceColor {
 La generación del shader se adapta a los parámetros definidos por el usuario:
 
 \begin{itemize}
-    \item \textbf{Parámetros geométricos}: posición, tamaño y color de cada objeto se insertan directamente en el código WGSL.
+    \item \textbf{Parámetros geométricos}: posición, tamaño y color de cada objeto se insertan directamente en el código WGSL, en el caso de ser objeto seleccionado se obtienen mediante los \texttt{uniforms}.
     \item \textbf{Operaciones}: el tipo de operación (unión, intersección, sustracción suave) determina qué función de combinación se utiliza.
     \item \textbf{Picking}: se genera una función especial que permite identificar qué objeto ha sido seleccionado por el usuario.
     \item \textbf{Gizmos}: si el usuario selecciona un objeto, se generan SDFs adicionales para los gizmos de manipulación.
@@ -98,15 +95,93 @@ fn opSmoothSubtract(d1: DistanceColor, d2: DistanceColor, k: f32) -> DistanceCol
 
 \section{Renderizado y Ray Marching}
 
-El shader utiliza ray marching para recorrer la escena y determinar la
-superficie más cercana en cada píxel. Para cada paso:
+El sistema de renderizado se basa en la técnica de \textbf{ray marching}
+implementada en el shader principal. Este método permite recorrer la escena
+pixel a pixel, determinando la distancia a la superficie más cercana en cada
+dirección de visión. El proceso está diseñado para trabajar con funciones de
+distancia (SDF, \textit{Signed Distance Function}) que representan primitivas
+geométricas y operaciones booleanas entre ellas.
+
+En cada fragmento (píxel), el shader realiza los siguientes pasos:
+\begin{itemize}
+    \item Se construye el rayo de visión a partir de la posición de la cámara y la
+          dirección correspondiente al píxel actual, utilizando los datos del buffer de
+          uniformes (\texttt{Uniforms}) y la matriz de vista-proyección
+          (\texttt{mvp\_matrix}). La dirección del rayo se normaliza y se ajusta según el
+          field-of-view (FOV) y el aspecto de la ventana.
+    \item El rayo se avanza iterativamente en la escena, sumando en cada paso la
+          distancia mínima a la superficie más cercana, obtenida evaluando la función SDF
+          combinada de todos los objetos (\texttt{sdf\_combined}). Este proceso se repite
+          hasta que la distancia a la superficie es menor que un umbral mínimo
+          (\texttt{MIN\_DISTANCE}) o se alcanza el límite máximo de pasos
+          (\texttt{MAX\_MARCHING\_STEPS}) o de distancia (\texttt{MAX\_DISTANCE}), como
+          se observa en la función \texttt{ray\_march()} del shader generado en
+          \texttt{Coder.cpp}.
+    \item Cuando se detecta una intersección con una superficie, se calcula la normal
+          local en ese punto mediante diferencias finitas (\texttt{calculate\_normal()}),
+          evaluando la variación de la SDF en las tres direcciones espaciales. Esta
+          aproximación utiliza pequeñas perturbaciones (\texttt{eps}) y resta los valores
+          de la SDF para obtener la derivada parcial en cada eje.
+    \item El color final se determina aplicando el modelo de iluminación Blinn-Phong
+          sobre el punto de intersección, normal calculada y dirección de visión.
+\end{itemize}
+
+\subsection{Cálculo de Normales}
+
+El cálculo de la normal en Copper se realiza en el shader mediante la función
+\texttt{calculate\_normal(p)}, donde $p$ es el punto de la superficie detectado
+por el ray marching. La normal se calcula como:
+
+\[
+    \vec{n} = \text{normalize}(
+    \begin{bmatrix}
+        \text{sdf\_combined}(p+\epsilon_x) - \text{sdf\_combined}(p-\epsilon_x) \\
+        \text{sdf\_combined}(p+\epsilon_y) - \text{sdf\_combined}(p-\epsilon_y) \\
+        \text{sdf\_combined}(p+\epsilon_z) - \text{sdf\_combined}(p-\epsilon_z)
+    \end{bmatrix}
+    )
+\]
+
+donde $\epsilon$ es un pequeño desplazamiento en cada eje. De esta forma, se
+obtiene la dirección normalizada perpendicular a la superficie. Esta técnica es
+estándar en renderizado SDF y permite obtener normales suaves y precisas sin
+necesidad de almacenar datos adicionales.
+
+\subsection{Modelo de Iluminación Blinn-Phong}
+
+Copper emplea el modelo de iluminación Blinn-Phong, implementado en la función
+\texttt{blinn\_phong\_lighting()} del shader. Este modelo calcula el color
+visible en cada punto de la superficie atendiendo a tres componentes:
 
 \begin{itemize}
-    \item Se evalúa la función SDF combinada para todos los objetos.
-    \item Al encontrar una superficie (distancia menor a un umbral), se calcula el color
-          aplicando iluminación tipo Blinn-Phong.
-    \item Se calcula el sombreado y las normales mediante diferencias finitas.
+    \item \textbf{Ambiental}: Representa la luz ambiental global, definida en Copper como una fracción constante de la luz blanca. (\texttt{ambient = 0.2 * light\_color}; donde \texttt{light\_color} es generalmente $(1.0, 1.0, 1.0)$).
+    \item \textbf{Difusa}: Calculada según el ángulo entre la normal de la superficie y la dirección de la luz (\texttt{light\_dir}), usando el producto escalar. Cuanto más alineados estén, mayor será la intensidad difusa.
+    \item \textbf{Especular}: Usa el vector \texttt{halfway} (media entre la dirección de la luz y la dirección de la vista) para calcular el brillo especular, elevado a una potencia para simular materiales brillantes.
 \end{itemize}
+
+El color final en cada punto se calcula como:
+
+\[
+    \text{color\_final} = \text{base\_color} \times (\text{ambient} + (1.0 + \text{shadow}) \times (\text{diffuse} + \text{specular}))
+\]
+
+donde \texttt{shadow} es el factor de atenuación por sombras, calculado
+mediante un nuevo ray marching desde el punto de intersección hacia la luz,
+comprobando si existen obstáculos en ese trayecto
+(\texttt{calculate\_shadow()}).
+
+\subsection{Cálculo de Sombra}
+
+La sombra en Copper se calcula mediante un segundo proceso de ray marching,
+iniciado desde el punto de intersección en la dirección de la luz. En cada
+paso, se evalúa la distancia a la superficie más cercana, y se acumula el valor
+mínimo relativo a la distancia recorrida, lo que permite obtener sombras suaves
+y realistas. Si el rayo encuentra una superficie antes de alcanzar la fuente de
+luz, la sombra se intensifica.
+
+Esto es optimizable, ya que se podría añadir el ray marching de las sombras al
+proceso de ray marching principal, evitando así la necesidad de un segundo
+recorrido por la escena.
 
 \section{Picking en el shader}
 
@@ -125,12 +200,12 @@ El proceso es el siguiente:
           cámara.
     \item Se realiza ray marching sobre la escena, evaluando la función SDF y almacenando
           el \texttt{id} del objeto más cercano.
-    \item El resultado se escribe en un buffer (generalmente una textura de un solo canal
-          entero), que se lee desde la CPU para determinar el objeto seleccionado.
+    \item El resultado se escribe en un buffer (una textura de un solo canal entero), que
+          se lee desde la CPU para determinar el objeto seleccionado.
 \end{enumerate}
 
-El núcleo del shader de picking, generado dinámicamente por la clase
-\texttt{Coder}, se parece a este fragmento:
+El núcleo del shader de picking se encuentra en la función
+\texttt{fragmentPickingMain}:
 
 \begin{lstlisting}[language=C++, caption={Picking shader fragment}]
 @fragment

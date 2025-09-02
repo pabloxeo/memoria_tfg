@@ -1,0 +1,42 @@
+\chapter{Conclusiones y mejoras futuras}
+
+En este documento se ha presentado el sistema Copper, un entorno de desarrollo
+para la creación y manipulación de escenas 3D basadas en Signed Distance Fields
+(SDF). A lo largo de los capítulos, se ha detallado la arquitectura,
+implementación y funcionamiento de sus principales componentes, incluyendo la
+gestión de controles, la implementación de shaders y el sistema de picking.
+
+Entre las conclusiones más relevantes, se destacan las siguientes:
+
+\begin{itemize}
+      \item La utilización de SDF permite una representación eficiente y flexible de la
+            geometría 3D, facilitando operaciones complejas como la unión, intersección y
+            sustracción de objetos.
+      \item La integración de herramientas de interfaz gráfica (ImGui) y gizmos proporciona
+            una experiencia de usuario intuitiva y directa para la manipulación de la
+            escena.
+      \item El sistema de picking implementado permite seleccionar objetos de manera
+            precisa, incluso en escenas complejas, mejorando la interactividad del entorno.
+\end{itemize}
+
+En cuanto a mejoras futuras, se proponen las siguientes líneas de trabajo:
+
+\begin{itemize}
+      \item Ampliación de las capacidades de edición en tiempo real, permitiendo a los
+            usuarios modificar más propiedades y mayor variedad de objetos.
+      \item Implementación de un sistema de materiales y texturas más avanzado, que permita
+            una mejor representación visual de los objetos en la escena.
+      \item Mejora del sistema de renderizado, optimizando el uso de la GPU y añadiendo
+            mejoras como el antialiasing.
+      \item Estudiar la portabilidad del sistema a web, debido a la elección de tecnologías
+            como WebGPU es un área de desarrollo evidente.
+      \item Añadir un sistema de exportación de la escena a formatos de malla estándar
+            (como OBJ o GLTF) para facilitar la interoperabilidad con otras herramientas y
+            flujos de trabajo. Con este objetivo, se ha estudiado la aplicación del
+            algoritmo Marching Cubes, que permite convertir las representaciones basadas en
+            SDF a mallas poligonales compatibles con estos formatos.
+\end{itemize}
+
+Estas mejoras contribuirán a consolidar a Copper como una herramienta potente y
+versátil para la creación de escenas 3D, ampliando sus posibilidades y
+mejorando la experiencia del usuario.

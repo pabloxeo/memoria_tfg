@@ -54,6 +54,7 @@ objetos SDF seleccionados mediante gizmos (flechas, planos).
     \item \textbf{Actualización de propiedades}: El centro del objeto se actualiza en \texttt{update}, propagando el nuevo valor al objeto seleccionado en el módulo \texttt{Coder}.
 \end{itemize}
 
+
 \subsection{Gizmo de movimiento lineal en ejes X, Y y Z}
 
 Para implementar el gizmo de movimiento lineal, es necesario implementar un
@@ -137,8 +138,8 @@ los parámetros que debemos introducir en las ecuaciones paramétricas de las l�
 
 El movimiento en un plano del gizmo (por ejemplo, el plano XY) utiliza un
 enfoque geométrico distinto al del movimiento lineal. En lugar de encontrar la
-distancia mínima entre dos líneas, el sistema calcula la **intersección directa
-entre el rayo del ratón y el plano de movimiento**.
+distancia mínima entre dos líneas, el sistema calcula la intersección directa
+entre el rayo del ratón y el plano de movimiento.
 
 El proceso, implementado en las funciones \texttt{GizmoControls::update} y
 \texttt{gizmoIntersection}, es el siguiente:
@@ -156,6 +157,8 @@ glm::vec3 diffV = intersection - this->firstIntersectionPoint;
                     (1, 1, 0).
               \item Para el plano XZ, la normal es (0, 1, 0). La máscara es (1, 1, 1) - (0, 1, 0) =
                     (1, 0, 1).
+              \item Para el plano YZ, la normal es (1, 0, 0). La máscara es (1, 1, 1) - (1, 0, 0) =
+                    (0, 1, 1).
           \end{itemize}
           Al multiplicar la nueva posición por esta máscara, se anula cualquier movimiento en la dirección de la normal, restringiendo el desplazamiento exclusivamente al plano deseado.
 \end{enumerate}
@@ -163,8 +166,3 @@ glm::vec3 diffV = intersection - this->firstIntersectionPoint;
 Este método garantiza que, aunque el ratón se mueva en un espacio 2D y el rayo
 viaje en 3D, el objeto seleccionado se deslice perfectamente sobre el plano
 elegido, proporcionando un control intuitivo y preciso.
-
-\subsection{Sincronización con cámara y escena}
-
-El gizmo se actualiza en función de la cámara activa y el aspecto de la
-ventana, asegurando coherencia entre la visualización y la interacción.
