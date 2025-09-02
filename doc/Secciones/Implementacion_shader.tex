@@ -132,7 +132,7 @@ El cálculo de la normal en Copper se realiza en el shader mediante la función
 \texttt{calculate\_normal(p)}, donde $p$ es el punto de la superficie detectado
 por el ray marching. La normal se calcula como:
 
-\[
+\begin{equation}
     \vec{n} = \text{normalize}(
     \begin{bmatrix}
         \text{sdf\_combined}(p+\epsilon_x) - \text{sdf\_combined}(p-\epsilon_x) \\
@@ -140,7 +140,7 @@ por el ray marching. La normal se calcula como:
         \text{sdf\_combined}(p+\epsilon_z) - \text{sdf\_combined}(p-\epsilon_z)
     \end{bmatrix}
     )
-\]
+\end{equation}
 
 donde $\epsilon$ es un pequeño desplazamiento en cada eje. De esta forma, se
 obtiene la dirección normalizada perpendicular a la superficie. Esta técnica es

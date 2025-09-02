@@ -30,12 +30,12 @@ La clase \texttt{Interfaz} interactúa con los módulos \texttt{Coder} y
 
 Al seleccionar un objeto, ImGui presenta sus propiedades y permite
 modificarlas:
-\begin{verbatim}
+\begin{lstlisting}[language=C++,caption={Edición de propiedades de un objeto SDF seleccionado}]
 ImGui::SliderFloat("X", &selectedObject.x, -10.0f, 10.0f);
 ImGui::ColorEdit3("Color", &selectedObject.r);
 // Para esferas:
 ImGui::SliderFloat("Radius", &selectedObject.size[0], 0.1f, 5.0f);
-\end{verbatim}
+\end{lstlisting}
 Cada cambio marca el pipeline como "dirty" para que el renderizador actualice
 la escena en tiempo real.
 
