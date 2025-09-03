@@ -9,7 +9,7 @@ detalladamente cómo se representa y utiliza la cámara en Copper, desde la
 construcción de la matriz de vista hasta su uso en los shaders mediante el
 sistema de \texttt{Uniforms}.
 
-\subsection{La matriz de vista en Copper}
+\section{La matriz de vista en Copper}
 
 En Copper, la cámara se representa principalmente mediante una matriz de vista
 (\texttt{view\_matrix}), que transforma las coordenadas de los objetos del
@@ -70,7 +70,7 @@ ejes de acuerdo a los vectores especificados. Los métodos
 obtener los vectores base del espacio de la cámara directamente desde la matriz
 de vista transpuesta.
 
-\subsection{Control de la cámara y actualización de la vista}
+\section{Control de la cámara y actualización de la vista}
 
 La clase \texttt{CameraController} gestiona la interacción del usuario para
 modificar la vista de la cámara mediante el ratón y el scroll, permitiendo
@@ -102,7 +102,7 @@ void CameraController::update_view_matrix() {
 }
 \end{lstlisting}
 
-\subsection{Paso de la matriz de cámara al shader: Uniforms}
+\section{Paso de la matriz de cámara al shader: Uniforms}
 
 Para que el shader pueda utilizar la información de la cámara, la matriz de
 vista se pasa como parte de la estructura \texttt{Uniforms}. En Copper, antes
@@ -139,7 +139,7 @@ La operación \texttt{transpose(uniforms.mvp\_matrix)} permite extraer los
 vectores principales de la cámara desde la matriz de vista, siguiendo la
 convención de OpenGL y GLM. \break
 
-\subsubsection{Motivos para utilizar una matriz $4\times4$ en la cámara de Copper}
+\subsection{Motivos para utilizar una matriz $4\times4$ en la cámara de Copper}
 
 Aunque el cálculo de los rayos de visión en Copper se realiza utilizando
 únicamente los vectores principales de la cámara (derecha, arriba y adelante),

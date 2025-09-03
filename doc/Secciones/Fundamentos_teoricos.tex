@@ -20,11 +20,11 @@ complejidad elevada para ciertas operaciones.
 Como alternativa, existen los métodos de representación implícita, como los
 campos de distancia con signo (\textit{Signed Distance Fields, SDF}). Una SDF
 es una función $f(\vec{x})$ que, para cada punto $\vec{x}$ del espacio,
-devuelve la distancia mínima a la superficie del objeto. El signo indica si el
-punto está en el interior (negativo), sobre la superficie (cero) o en el
-exterior (positivo). Este enfoque permite describir objetos mediante
-expresiones matemáticas, simplificando la combinación y manipulación de
-geometría compleja.
+devuelve la distancia mínima a la superficie del objeto\cite{hart1996}. El
+signo indica si el punto está en el interior (negativo), sobre la superficie
+(cero) o en el exterior (positivo). Este enfoque permite describir objetos
+mediante expresiones matemáticas, simplificando la combinación y manipulación
+de geometría compleja.
 
 \section{Funciones de distancia con signo (SDF)}
 
@@ -48,16 +48,17 @@ Y también pueden combinarse empleando operadores booleanos y suaves:
     \item \textbf{Unión suave}: Interpolación entre distancias y colores para crear transiciones continuas.
 \end{itemize}
 
-Las SDF son especialmente potentes para casos de generación procedural,
-efectos visuales, física, simulaciones y renderizado implícito, permitiendo la
+Las SDF son especialmente potentes para casos de generación procedural, efectos
+visuales, física, simulaciones y renderizado implícito, permitiendo la
 composición jerárquica de formas y la aplicación de transformaciones a nivel
 funcional.
 
 \section{Ray Marching}
 
-El \textit{ray marching} es una técnica de renderizado que avanza iterativamente un rayo en el espacio hasta aproximar la intersección con
-una superficie implícita. El procedimiento puede describirse en los siguientes
-pasos:
+El \textit{ray marching} es una técnica de renderizado que avanza
+iterativamente un rayo en el espacio hasta aproximar la intersección con una
+superficie implícita\cite{hart1996,pbrt3}. El procedimiento puede describirse
+en los siguientes pasos:
 
 \begin{enumerate}
     \item Lanzar un rayo desde la cámara en una dirección determinada.
@@ -67,25 +68,30 @@ pasos:
           superficie) o se alcance un límite de pasos o distancia máxima.
 \end{enumerate}
 
-Este método sumado a las SDF se llama sphere tracing, en este caso la distancia devuelta por la SDF se utiliza para avanzar el rayo de manera óptima.
+Este método sumado a las SDF se llama sphere tracing, en este caso la distancia
+devuelta por la SDF se utiliza para avanzar el rayo de manera óptima.
 
 \subsection{Ray Tracing}
 
-A diferencia del ray marching, el ray tracing cálcula la primera intersección exacta entre el rayo y las primitivas geométricas de la escena. 
-Este método es especialmente eficiente para escenas donde la geometría está definida de forma explícita, como mallas poligonales.
-El procedimiento es similar al ray marching, se lanza un rayo desde la cámara, pero esta vez en vez de avanzar iterativamente,
-se calcula cual es el primer objeto con el que colisionaría el rayo.
+A diferencia del ray marching, el ray tracing cálcula la primera intersección
+exacta entre el rayo y las primitivas geométricas de la
+escena\cite{whitted1980}. Este método es especialmente eficiente para escenas
+donde la geometría está definida de forma explícita, como mallas poligonales.
+El procedimiento es similar al ray marching, se lanza un rayo desde la cámara,
+pero esta vez en vez de avanzar iterativamente, se calcula cual es el primer
+objeto con el que colisionaría el rayo.
 
-El ray tracing no se puede usar con SDF, ya que esta solo devuelve la distancia al objeto más cercano.
+El ray tracing no se puede usar con SDF, ya que esta solo devuelve la distancia
+al objeto más cercano.
 
 \subsection{Sphere Tracing}
 
-La técnica de \textbf{sphere tracing}, introducida por Hart, es una variante
-eficiente de ray marching. Utiliza la propia SDF para calcular el avance óptimo
-en cada paso del rayo. En cada iteración, la distancia devuelta por la SDF se
-interpreta como el radio de una esfera libre de obstáculos centrada en el punto
-actual. Así, el rayo puede avanzar exactamente esa distancia sin riesgo de
-atravesar ninguna superficie.
+La técnica de \textbf{sphere tracing}, introducida por Hart\cite{hart1996}, es
+una variante eficiente de ray marching. Utiliza la propia SDF para calcular el
+avance óptimo en cada paso del rayo. En cada iteración, la distancia devuelta
+por la SDF se interpreta como el radio de una esfera libre de obstáculos
+centrada en el punto actual. Así, el rayo puede avanzar exactamente esa
+distancia sin riesgo de atravesar ninguna superficie.
 
 Sphere tracing es especialmente útil en escenas donde las funciones de
 distancia son suaves y bien definidas, permitiendo renderizar geometría
@@ -112,26 +118,29 @@ Las SDF ofrecen varias ventajas sobre los métodos de modelado tradicionales:
     \item \textbf{Flexibilidad}: Permiten crear transiciones suaves entre objetos mediante operadores suavizados, lo que es difícil de lograr con mallas.
 \end{itemize}
 
-Pero también presentan diferentes limitaciones a la hora de representar geometría:
+Pero también presentan diferentes limitaciones a la hora de representar
+geometría:
 
 \begin{itemize}
-    \item \textbf{Precision y aliasing}: El umbral de colisión y el número de pasos afectan la calidad de la imagen y pueden causar aliasing o superficies rugosas.
-    \item \textbf{Superficies delgadas}: Si la SDF varía abruptamente o la superficie es muy fina, el avance óptimo se reduce y el número de pasos aumenta significativamente.
-    \item \textbf{Efectos avanzados}: Efectos como la refracción y la reflexión requieren múltiples rayos y aumentan el coste computacional.
-    \item \textbf{Desempeño}: El rendimiento depende de la complejidad de las funciones SDF y del número de objetos en escena.
+\item \textbf{Precision y aliasing}: El umbral de colisión y el número de pasos afectan la calidad de la imagen y pueden causar aliasing o superficies rugosas.
+\item \textbf{Superficies delgadas}: Si la SDF varía abruptamente o la superficie es muy fina, el avance óptimo se reduce y el número de pasos aumenta significativamente.
+\item \textbf{Efectos avanzados}: Efectos como la refracción y la reflexión requieren múltiples rayos y aumentan el coste computacional.
+\item \textbf{Desempeño}: El rendimiento depende de la complejidad de las funciones SDF y del número de objetos en escena.
+\item \textbf{Depuración}: La depuración de SDF complejas puede resultar poco intuitiva debido a su naturaleza matemática y a la falta de herramientas específicas, requiriendo de herramienta de visualización adicionales o renderizados auxiliares.
 \end{itemize}
 
 \section{WebGPU: Acceso moderno a la GPU}
 
 WebGPU es un estándar gráfico de nueva generación que proporciona acceso
 eficiente y multiplataforma a la GPU, tanto en navegadores como en aplicaciones
-nativas. Surge como respuesta a las limitaciones de APIs tradicionales
-como OpenGL y DirectX, para su uso en la web, pretende ser el sucesor de WebGL,
+nativas. Surge como respuesta a las limitaciones de APIs tradicionales como
+OpenGL y DirectX, para su uso en la web, pretende ser el sucesor de WebGL,
 ofreciendo un acceso más directo y eficiente a las capacidades de la GPU.
 
 \subsection{Motivación y principios de diseño}
 
-WebGPU fue diseñado para proporcionar los siguientes atributos a los desarrolladores:
+WebGPU fue diseñado para proporcionar los siguientes atributos a los
+desarrolladores:
 
 \begin{itemize}
     \item \textbf{Multiplataforma}: Disponible en Windows, Linux, macOS y en navegadores modernos (Chrome, Firefox, Safari).
@@ -140,9 +149,21 @@ WebGPU fue diseñado para proporcionar los siguientes atributos a los desarrolla
     \item \textbf{Modelo explícito}: El usuario configura directamente los recursos (buffers, texturas, pipelines) y controla el ciclo de vida de los datos, permitiendo optimizaciones avanzadas.
 \end{itemize}
 
-En contraste con OpenGL/WebGL, WebGPU obliga a definir explícitamente los
-recursos y su uso, lo que mejora la seguridad y el rendimiento pero requiere
-una mayor comprensión del modelo de GPU.
+WebGPU optimiza la comunicación entre la CPU y la GPU, permitiendo un alto
+grado de paralelismo. A diferencia de APIs más antiguas, donde la CPU a menudo
+debe esperar a que la GPU complete una tarea, WebGPU permite enviar comandos de
+manera asíncrona.
+
+El flujo de trabajo se basa en la creación de \textbf{colas de comandos}
+(\textit{command queues}). La CPU registra una serie de operaciones (dibujar
+objetos, actualizar buffers, etc.) en un \textit{command buffer}, que luego se
+envía a la cola de la GPU para su ejecución. Una vez encolados, los comandos se
+ejecutan de manera asíncrona, aunque el programador dispone de mecanismos de
+sincronización como \textit{fences} y \textit{promises} (p. ej.,
+	\texttt{queue.onSubmittedWorkDone()}) si necesita coordinar CPU y GPU. Este
+modelo minimiza los tiempos de espera y maximiza el uso de ambos procesadores,
+lo que es fundamental para aplicaciones de alto rendimiento como el renderizado
+en tiempo real.
 
 \subsection{Conceptos clave de WebGPU}
 

@@ -50,3 +50,40 @@ if (ImGuiFileDialog::Instance()->IsOk()) {
 La interfaz muestra el número de frames por segundo (FPS) utilizando
 \texttt{ImGui::GetIO().Framerate}, permitiendo valorar el rendimiento del
 sistema durante la edición y el renderizado.
+
+\subsection{Pruebas de rendimiento con \texttt{addTest}}
+
+Se han realizado pruebas de rendimiento utilizando el método \texttt{addTest} de
+\texttt{Coder}, el cual añade un conjunto de esferas a la escena para evaluar
+el comportamiento del sistema bajo diferentes cargas de objetos. Los resultados
+obtenidos, variando el número de objetos y la presencia del plano de suelo, son
+los siguientes:
+
+\begin{itemize}
+    \item 20 objetos: \\
+        \textbf{Sin suelo:} 240 FPS \\
+        \textbf{Con suelo:} 120 FPS
+    \item 50 objetos: \\
+        \textbf{Sin suelo:} 180 FPS \\
+        \textbf{Con suelo:} 60 FPS
+    \item 100 objetos: \\
+        \textbf{Sin suelo:} 100 FPS \\
+        \textbf{Con suelo:} 30 FPS
+    \item 200 objetos: \\
+        \textbf{Sin suelo:} 25 FPS \\
+        \textbf{Con suelo:} 10 FPS
+\end{itemize}
+
+Estos resultados muestran cómo el rendimiento (FPS) se ve afectado por el número
+de objetos y la presencia del suelo en la escena. Se observa una disminución
+progresiva de los FPS a medida que aumenta el número de objetos, siendo más
+acusada cuando se activa el plano de suelo, esto es causado principalmente por la forma actual de calcular las sombras.
+
+Las especificaciones del sistema utilizado para realizar estas pruebas son las siguientes:
+
+\begin{itemize}
+    \item CPU: AMD Ryzen 5 5600X
+    \item GPU: AMD Radeon RX 6800
+    \item RAM: 32 GB
+    \item Sistema operativo: Arch Linux
+\end{itemize}

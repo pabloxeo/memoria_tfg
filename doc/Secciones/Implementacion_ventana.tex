@@ -79,7 +79,6 @@ sistema. El diseño implementado permite:
 \begin{itemize}
     \item \textbf{Sincronización con el pipeline gráfico}: Los eventos de redimensionado se propagan automáticamente al \texttt{Renderer}, que actualiza buffers, superficie y matrices de proyección, manteniendo la coherencia visual.
     \item \textbf{Integración con ImGui}: Antes de procesar eventos de ratón, se comprueba si ImGui está capturando el ratón, evitando conflictos entre la interfaz gráfica y la manipulación 3D.
-    \item \textbf{Extensibilidad}: Aunque el callback de movimiento de ratón (\texttt{MouseMoveCallback}) está declarado, no se encuentra activado por defecto, permitiendo su futura ampliación sin modificar la estructura principal.
 \end{itemize}
 
 El siguiente fragmento de código muestra la gestión y propagación de eventos
@@ -94,39 +93,6 @@ void Window::MouseButtonCallback(GLFWwindow *window, int button, int action, int
 }
 \end{verbatim}
 
-\section{Interacción con el ciclo de vida de la aplicación}
-
-La ventana se integra en el ciclo de vida de la aplicación a través del módulo
-\texttt{Core} (\texttt{src/core/Core.cpp}, \texttt{src/core/Core.h}), que
-gestiona su inicialización y destrucción. El flujo es el siguiente:
-
-\begin{enumerate}
-    \item \texttt{Core::Initialize()} llama a \texttt{window.Initialize(&renderer)} y a \texttt{renderer.Init(&window)}, asegurando que la ventana y el sistema gráfico están listos antes de iniciar el bucle principal.
-    \item Durante la ejecución, \texttt{Core::MainLoop()} llama a
-          \texttt{glfwPollEvents()} y a \texttt{renderer.Render()}, manteniendo la
-          actualización continua de la ventana y la escena.
-    \item Al finalizar, \texttt{Core::Terminate()} invoca \texttt{window.Destroy()} y
-          \texttt{glfwTerminate()}, liberando todos los recursos y evitando fugas de
-          memoria.
-\end{enumerate}
-
-\section{Decisiones técnicas y justificación}
-
-La elección de GLFW como biblioteca para la gestión de ventanas se justifica
-por varios motivos:
-
-\begin{itemize}
-    \item \textbf{Portabilidad}: GLFW es multiplataforma, permitiendo ejecutar Copper en diferentes sistemas operativos sin cambios en el código.
-    \item \textbf{Compatibilidad}: La integración con WebGPU y con ImGui está ampliamente soportada, simplificando el desarrollo y la depuración.
-    \item \textbf{Modularidad}: El diseño de la clase \texttt{Window} permite modificar el backend de ventanas sin afectar al resto del sistema, siguiendo el principio de separación de responsabilidades.
-    \item \textbf{Eficiencia}: La gestión nativa de eventos y la actualización dinámica de los buffers gráficos optimizan el rendimiento y la fluidez de la aplicación.
-\end{itemize}
-
-Estas decisiones están alineadas con las recomendaciones de la literatura
-técnica (Sommerville, 2016) y con las guías docentes de la ETSIIT, que
-aconsejan implementar componentes modulares, eficientes y fácilmente
-mantenibles.
-
 \section{Interacción con otros componentes}
 
 El módulo Ventana está estrechamente integrado con:
@@ -140,20 +106,3 @@ El módulo Ventana está estrechamente integrado con:
 La arquitectura facilita la extensión futura del sistema, permitiendo añadir
 nuevas funcionalidades (por ejemplo, soporte para pantallas múltiples o
 diferentes sistemas de entrada) sin modificar la lógica principal.
-
-\section{Flujo de datos y ciclo de vida}
-
-Durante la ejecución de la aplicación, la ventana realiza las siguientes
-tareas:
-
-\begin{itemize}
-    \item Recoge eventos de entrada (ratón, teclado, redimensionado) y los distribuye
-          entre los módulos correspondientes.
-    \item Mantiene actualizadas las dimensiones de la ventana, permitiendo al renderer
-          ajustar el aspecto y las matrices de proyección.
-    \item Facilita la integración de la interfaz gráfica y la visualización de los
-          controles de usuario.
-\end{itemize}
-
-El ciclo de vida completo está gestionado por el módulo \texttt{Core},
-garantizando la correcta inicialización y liberación de recursos.

@@ -1,40 +1,40 @@
 \chapter{Introducción}
 El desarrollo de los gráficos tridimensionales por computadora ha sido un campo
-de investigación activo y en constante evolución desde sus inicios.\\ La
+de investigación activo y en constante evolución desde sus inicios. La
 capacidad de crear representaciones visuales de objetos y escenas en tres
 dimensiones ha revolucionado diversas industrias, desde el entretenimiento
-hasta la medicina y la ingeniería.\\ A medida que la tecnología avanza, también
+hasta la medicina y la ingeniería. A medida que la tecnología avanza, también
 lo hacen las técnicas y herramientas utilizadas para generar gráficos 3D, lo
 que plantea nuevos desafíos y oportunidades para los investigadores y
 desarrolladores.
 
 En sus inicios, la generación de gráficos 3D estaba limitada por la capacidad
 de cómputo y se basaba en \textit{pipelines} gráficos fijos compuestos por
-etapas de transformación, iluminación y rasterización.\\ Posteriormente, con la
+etapas de transformación, iluminación y rasterización. Posteriormente, con la
 llegada de los \textit{shaders} programables en GPU (Nvidia GeForce 3 en 2001),
 fue posible sustituir los \textit{pipelines} fijos por \textit{pipelines}
 programables, lo que abrió un abanico de posibilidades para la creación de
 efectos visuales complejos y personalizados, como los algoritmos no basados en
-polígonos.\\ Esto impulsó la investigación en técnicas de representación más
+polígonos. Esto impulsó la investigación en técnicas de representación más
 avanzadas, como el \textit{ray tracing} y, en particular, el \textit{ray
     marching}.
 
 En el contexto del renderizado basado en funciones implícitas, las
 \textit{Signed Distance Functions} (SDF) no son una invención reciente, sino
-que tienen sus raíces en trabajos mucho más antiguos.\\ El concepto de combinar
+que tienen sus raíces en trabajos mucho más antiguos. El concepto de combinar
 funciones implícitas mediante operaciones booleanas se remonta al trabajo de
-Ricci en 1972~\cite{Ricci:1973:CGC}, y fue ampliado en 1989 por B.~Wyvill y
-G.~Wyvill con el modelado de \textit{soft objects}~\cite{wyvill1989}.\\ Ese
+Ricci en 1972\cite{Ricci:1973:CGC}, y fue ampliado en 1989 por B.Wyvill y
+G.Wyvill con el modelado de \textit{soft objects}\cite{wyvill1989}. Ese
 mismo año, Sandin, Hart y Kauffman aplicaron \textit{ray marching} a SDF para
-renderizar fractales tridimensionales~\cite{hart1989ray}.\\ Posteriormente, en
+renderizar fractales tridimensionales\cite{hart1989ray}. Posteriormente, en
 1995, Hart documentó de nuevo la técnica, a la que denominó \textit{Sphere
-    Tracing}~\cite{hart1996}.
+    Tracing}\cite{hart1996}.
 
 La popularización moderna de las SDF en el ámbito del \textit{renderizado en
     tiempo real} se debe en gran parte a la comunidad \textit{demoscene},
-especialmente a partir de mediados de la década de 2000.\\ Trabajos como el de
+especialmente a partir de mediados de la década de 2000. Trabajos como el de
 Crane (2005) y Evans (2006) introdujeron la idea de restringir el campo a una
-distancia euclidiana real, mejorando el rendimiento y la calidad visual.\\ Sin
+distancia euclidiana real, mejorando el rendimiento y la calidad visual. Sin
 embargo, el uso de esta técnica no está tan extendido en aplicaciones de
 renderizado en tiempo real, a pesar de su potencial para crear gráficos
 visuales y eficientes.
