@@ -25,18 +25,9 @@ principales que encapsulan las diferentes funcionalidades, como se ve en la
 Figura\ref{fig:diagrama_arquitectura}.
 
 \begin{figure}[H]
-    \centering
-    % \includegraphics[width=0.9\textwidth]{imagenes/diagrama_arquitectura.png}
-    \framebox[0.9\textwidth]{
-        \parbox{0.85\textwidth}{
-            \centering
-            \vspace{4cm}
-            \textbf{Espacio para el Diagrama de Arquitectura} \\
-            \vspace{0.2cm}
-            \textit{(Este diagrama debe mostrar las relaciones entre Core, Renderer, Interfaz, Window, Coder, Camera, CameraController y GizmoControls)}
-            \vspace{4cm}
-        }
-    }
+    \begin{center}
+    \includegraphics[width=0.95\textwidth]{imagenes/diagrama_arquitectura.pdf}
+    \end{center}
     \caption{Diagrama de la arquitectura por componentes de \textit{Copper}.}
     \label{fig:diagrama_arquitectura}
 \end{figure}
@@ -44,10 +35,10 @@ Figura\ref{fig:diagrama_arquitectura}.
 Las capas identificadas son:
 
 \begin{itemize}
-    \item \textbf{Capa de Orquestación y Ciclo de Vida:} Responsable de inicializar, ejecutar y terminar la aplicación. Es el punto de entrada y el gestor del bucle principal.
-    \item \textbf{Capa de Datos y Lógica de la Escena (Modelo):} Contiene el estado de la escena 3D, incluyendo los objetos, sus propiedades y la cámara. Encapsula la lógica de negocio, como la generación dinámica de shaders.
-    \item \textbf{Capa de Presentación (Vista):} Se encarga de toda la representación visual, tanto el renderizado de la escena 3D mediante WebGPU como la interfaz gráfica de usuario (GUI) construida con ImGui.
-    \item \textbf{Capa de Control de Usuario (Controlador):} Captura y procesa las entradas del usuario (ratón y teclado) y las traduce en acciones que modifican el estado del Modelo o la Vista.
+    \item \textbf{Capa de Orquestación y Ciclo de Vida (rojo):} Responsable de inicializar, ejecutar y terminar la aplicación. Es el punto de entrada y el gestor del bucle principal.
+    \item \textbf{Capa de Datos y Lógica de la Escena (Modelo) (naranja):} Contiene el estado de la escena 3D, incluyendo los objetos, sus propiedades y la cámara. Encapsula la lógica de negocio, como la generación dinámica de shaders.
+    \item \textbf{Capa de Presentación (Vista) (verde):} Se encarga de toda la representación visual, tanto el renderizado de la escena 3D mediante WebGPU como la interfaz gráfica de usuario (GUI) construida con ImGui.
+    \item \textbf{Capa de Control de Usuario (Controlador) (azul):} Captura y procesa las entradas del usuario (ratón y teclado) y las traduce en acciones que modifican el estado del Modelo o la Vista.
 \end{itemize}
 
 Esta separación permite que, por ejemplo, se pueda modificar el motor de

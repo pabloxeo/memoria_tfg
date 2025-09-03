@@ -8,12 +8,6 @@ describe en profundidad la arquitectura, matemáticas y tecnologías utilizadas,
 y se divide en dos apartados: controles de interfaz gráfica (ImGui) y controles
 de gizmo (GizmoControls).
 
-\begin{figure}[H]
-	\centering
-	\includegraphics[width=0.7\textwidth]{imagenes/ImGui.jpg}
-	\caption{Interfaz gráfica basada en ImGui.}
-\end{figure}
-
 \section{Controles de interfaz gráfica: ImGui}
 
 El módulo de interfaz gráfica (\texttt{Interfaz.cpp}, \texttt{Interfaz.h})
@@ -32,6 +26,13 @@ La clase \texttt{Interfaz} interactúa con los módulos \texttt{Coder} y
     \item Implementar la gestión de archivos para guardar y cargar escenas.
 \end{itemize}
 
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.7\textwidth]{imagenes/ImGui.png}
+	\caption{Interfaz gráfica ImGui general.}
+\end{figure}
+
+
 \subsection{Ejemplo de interacción}
 
 Al seleccionar un objeto, ImGui presenta sus propiedades y permite
@@ -44,6 +45,12 @@ ImGui::SliderFloat("Radius", &selectedObject.size[0], 0.1f, 5.0f);
 \end{lstlisting}
 Cada cambio marca el pipeline como "dirty" para que el renderizador actualice
 la escena en tiempo real.
+
+\begin{figure}[H]
+	\centering
+	\includegraphics[width=0.7\textwidth]{imagenes/ImGui_selected.png}
+	\caption{Interfaz gráfica ImGui del objeto seleccionado.}
+\end{figure}
 
 \section{Controles de gizmo: GizmoControls}
 
